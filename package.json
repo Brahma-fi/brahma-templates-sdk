@@ -1,0 +1,13 @@
+{
+  "name": "brahma-templates-sdk",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Brahma-fi/brahma-templates-sdk.git",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "author": "impolska742 <vaibhav19bhardwaj@gmail.com>",
+  "license": "MIT"
+}
