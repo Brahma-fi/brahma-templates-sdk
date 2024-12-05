@@ -1,6 +1,6 @@
 # Brahma Templates SDK
 
-The `brahma-templates-sdk` is a powerful tool designed to facilitate interaction with Brahma. It provides a set of functions to manage automations, fetch logs, and handle transactions efficiently.
+The `brahma-templates-sdk` is a powerful tool designed to facilitate interaction with Brahma. It provides a set of functions to manage transactions efficiently.
 
 ## Installation
 
@@ -21,19 +21,25 @@ yarn add brahma-templates-sdk
 The `TestSDK` class provides the following main functions:
 
 1. **`getClientFactory()`**:
-   - Returns the chain ID, connected Brahma account address, assets of the Brahma account, and connected EOA.
 
-2. **`addAutomation(params)`**:
-   - Adds a new automation with the specified parameters.
+   - **Description**: Retrieves the user client factory details.
+   - **Returns**: A `Promise` that resolves to a `UserClientFactory` object containing:
+     - `eoa`: The externally owned account address.
+     - `consoleAddress`: The console address.
+     - `chainId`: The chain ID.
+     - `assets`: An array of [`TAsset`](/packages/brahma-templates-sdk/src/types.ts#L17) objects.
 
-3. **`fetchAutomationSubscriptions(account, chainId)`**:
-   - Returns the currently running automations for the connected Brahma account.
-
-4. **`fetchAutomationLogs(automationId)`**:
-   - Retrieves logs for the specified automation ID.
-
-5. **`addToTxnBuilder(params, templateName)`**:
-   - Passes an array of transactions with calldata, to, and value to execute a specific transaction.
+2. **`addToTxnBuilder(params, automationName)`**:
+   - **Description**: Adds transactions to the transaction builder for a specified automation.
+   - **Parameters**:
+     - `params`: An object of type `BuilderParams` containing:
+       - `transactions`: An array of `Transaction` objects, each with:
+         - `toAddress`: The address to send the transaction to.
+         - `callData`: The calldata for the transaction.
+         - `value`: The value to send with the transaction.
+     - `automationName`: A string representing the name of the automation.
+   - **Returns**: A `Promise` that resolves to `void`.
+   - **Throws**: An error if no transactions are passed.
 
 ## Example
 
@@ -46,12 +52,100 @@ import { TestSDK } from 'brahma-templates-sdk';
 const testSdk = new TestSDK();
 
 export default function Template() {
-const [value, setValue] = useState(false);
-// existing code...
+  const [value, setValue] = useState(false);
+
+  // Example usage of getClientFactory
+  const fetchClientFactory = async () => {
+    try {
+      const clientFactory = await testSdk.getClientFactory();
+      console.log(clientFactory);
+      // Example JSON response for assets
+      /*
+      {
+        "eoa": "0xYourEOAAddress",
+        "consoleAddress": "0xConsoleAddress",
+        "chainId": 1,
+        "assets": [
+          {
+            "address": "0x0000000000000000000000000000000000000000",
+            "balanceOf": {
+              "decimals": 18,
+              "formatted": "0.006461781144746279",
+              "symbol": "ETH",
+              "value": 6461781144746279n
+            },
+            "chainId": 81457,
+            "core": true,
+            "decimals": 18,
+            "isActive": true,
+            "isVerified": true,
+            "logo": "https://brahma-static.s3.us-east-2.amazonaws.com/Asset/Asset%3DETH.svg",
+            "name": "ETH",
+            "prices": {
+              "default": 3931.43
+            },
+            "symbol": "ETH",
+            "updatedAt": "2024-02-28T20:44:00.526451Z",
+            "value": "25.404040245889864072",
+            "verified": true
+          }
+        ]
+      }
+      */
+    } catch (error) {
+      console.error("Error fetching client factory:", error);
+    }
+  };
+
+  // Example usage of addToTxnBuilder
+  const addTransaction = async () => {
+    try {
+      const params = {
+        transactions: [
+          {
+            toAddress: "0x123...",
+            callData: "0xabc...",
+            value: BigInt(1000),
+          },
+          {
+            toAddress: "0x456...",
+            callData: "0xdef...",
+            value: BigInt(2000),
+          }
+        ],
+      };
+      await testSdk.addToTxnBuilder(params, "MyAutomation");
+      // Example JSON params
+      /*
+      {
+        "transactions": [
+          {
+            "toAddress": "0x123...",
+            "callData": "0xabc...",
+            "value": 1000
+          },
+          {
+            "toAddress": "0x456...",
+            "callData": "0xdef...",
+            "value": 2000
+          }
+        ],
+        "automationName": "MyAutomation"
+      }
+      */
+    } catch (error) {
+      console.error("Error adding to transaction builder:", error);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchClientFactory}>Fetch Client Factory</button>
+      <button onClick={addTransaction}>Add Transaction</button>
+    </div>
+  );
 }
 ```
-
-For a more comprehensive example, please refer to our [example React repository](/examples/custom-strategy/src/shared/strategy/index.tsx).
 
 ## Contributing
 
