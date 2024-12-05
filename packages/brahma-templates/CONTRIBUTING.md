@@ -1,5 +1,7 @@
 # Contributing to Template Repository
 
+Checkout an example [here](/packages/brahma-templates/src/templates/drain-account/index.tsx)
+
 Example Structure
 
 ```bash

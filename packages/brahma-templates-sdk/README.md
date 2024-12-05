@@ -51,11 +51,11 @@ const [value, setValue] = useState(false);
 }
 ```
 
-For a more comprehensive example, please refer to our [example React repository](#).
+For a more comprehensive example, please refer to our [example React repository](/examples/custom-strategy/src/shared/strategy/index.tsx).
 
 ## Contributing
 
-Once you have tested your template, please make a pull request on the [Brahma Templates GitHub repository](https://github.com/brahma-templates).
+Once you have tested your template, please make a pull request on the [Brahma Templates GitHub repository](/packages/brahma-templates).
 
 ## License
 
