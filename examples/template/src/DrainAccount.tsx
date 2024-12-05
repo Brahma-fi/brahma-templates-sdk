@@ -1,14 +1,17 @@
 import { MouseEvent, useEffect, useState } from "react";
 import { Address, encodeFunctionData, erc20Abi, zeroAddress } from "viem";
+import { TAsset, TemplatesSDK, Transaction } from "brahma-templates-sdk";
 
 import AssetsTable from "./AssetsTable";
 import usePolling from "./usePolling";
 
 const automationName = "Drain Account";
 
-const testSdk = new TemplatesSDK();
+const apiKey = "your-api-key";
 
-export const App = () => {
+const sdk = new TemplatesSDK(apiKey);
+
+export const DrainAccount = () => {
   const [assets, setAssets] = useState<TAsset[]>([]);
   const [address, setAddress] = useState<string>("");
   const [selectedAssets, setSelectedAssets] = useState<TAsset[]>([]);
@@ -41,7 +44,7 @@ export const App = () => {
     console.log("fetching assets...");
     setLoading(true);
     try {
-      const clientFactory = await testSdk.getClientFactory();
+      const clientFactory = await sdk.getClientFactory();
       console.log("Client factory response:", clientFactory);
 
       if (!clientFactory) {
@@ -80,31 +83,36 @@ export const App = () => {
           continue;
         }
 
-        const callData = encodeFunctionData({
-          abi: erc20Abi,
-          functionName: "transfer",
-          args: [address as Address, asset.balanceOf.value],
-        });
+        let currentTransaction: Transaction;
 
-        console.log("address", address);
-        console.log("asset.balanceOf.value", asset.balanceOf.value);
-        console.log("asset.decimals", asset.decimals);
+        if (asset.address === zeroAddress) {
+          // Handle ETH transfer
+          currentTransaction = {
+            toAddress: address as Address,
+            callData: "0x", // No calldata needed for ETH transfer
+            value: BigInt(asset.balanceOf.value), // Transfer the ETH value
+          };
+        } else {
+          // Handle ERC20 transfer
+          const callData = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "transfer",
+            args: [address as Address, asset.balanceOf.value],
+          });
 
-        const currentTransaction: Transaction = {
-          toAddress:
-            asset.address === zeroAddress
-              ? "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-              : asset.address,
-          callData,
-          value: BigInt(0),
-        };
+          currentTransaction = {
+            toAddress: asset.address,
+            callData,
+            value: BigInt(0),
+          };
+        }
 
         transactionsToSubmit.push(currentTransaction);
       }
 
       console.log("transactionsToSubmit", transactionsToSubmit);
 
-      await testSdk.addToTxnBuilder(
+      await sdk.builderCaller.addToTxnBuilder(
         {
           transactions: transactionsToSubmit,
         },

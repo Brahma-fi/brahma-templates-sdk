@@ -1,4 +1,23 @@
-import * as S from "./styles";
+import { TAsset } from "brahma-templates-sdk";
+import styled from "styled-components";
+
+const StyledTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+const StyledTh = styled.th`
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+  color: #000;
+`;
+
+const StyledTd = styled.td`
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  color: #000;
+`;
 
 const AssetsTable = ({
   assets,
@@ -19,13 +38,13 @@ const AssetsTable = ({
   );
 
   return (
-    <S.StyledTable>
+    <StyledTable>
       <thead>
         <tr style={{ backgroundColor: "#f4f4f4" }}>
-          <S.StyledTh>Name</S.StyledTh>
-          <S.StyledTh>Symbol</S.StyledTh>
-          <S.StyledTh>Balance</S.StyledTh>
-          <S.StyledTh
+          <StyledTh>Name</StyledTh>
+          <StyledTh>Symbol</StyledTh>
+          <StyledTh>Balance</StyledTh>
+          <StyledTh
             style={{
               display: "flex",
               justifyContent: "center",
@@ -39,7 +58,7 @@ const AssetsTable = ({
               checked={areAllSelected}
               onChange={handleSelectAllAssets}
             />
-          </S.StyledTh>
+          </StyledTh>
         </tr>
       </thead>
       <tbody>
@@ -48,20 +67,20 @@ const AssetsTable = ({
             key={index}
             style={{ backgroundColor: index % 2 === 0 ? "#fff" : "#f9f9f9" }}
           >
-            <S.StyledTd>{asset.name}</S.StyledTd>
-            <S.StyledTd>{asset.symbol}</S.StyledTd>
-            <S.StyledTd>{asset.balanceOf?.formatted}</S.StyledTd>
-            <S.StyledTd>
+            <StyledTd>{asset.name}</StyledTd>
+            <StyledTd>{asset.symbol}</StyledTd>
+            <StyledTd>{asset.balanceOf?.formatted}</StyledTd>
+            <StyledTd>
               <input
                 type="checkbox"
                 checked={selectedAssets.includes(asset)}
                 onChange={() => handleAssetSelect(asset)}
               />
-            </S.StyledTd>
+            </StyledTd>
           </tr>
         ))}
       </tbody>
-    </S.StyledTable>
+    </StyledTable>
   );
 };
 
