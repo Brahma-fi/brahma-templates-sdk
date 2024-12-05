@@ -18,7 +18,7 @@ yarn add brahma-templates-sdk
 
 ### Main Functions
 
-The `TestSDK` class provides the following main functions:
+The `TemplatesSDK` class provides the following main functions:
 
 1. **`getClientFactory()`**:
 
@@ -47,9 +47,9 @@ Here's a basic example of how to use the SDK in a React component:
 
 ```ts
 import React, { useState } from 'react';
-import { TestSDK } from 'brahma-templates-sdk';
+import { TemplatesSDK } from 'brahma-templates-sdk';
 
-const testSdk = new TestSDK();
+const sdk = new TemplatesSDK();
 
 export default function Template() {
   const [value, setValue] = useState(false);
@@ -57,7 +57,7 @@ export default function Template() {
   // Example usage of getClientFactory
   const fetchClientFactory = async () => {
     try {
-      const clientFactory = await testSdk.getClientFactory();
+      const clientFactory = await sdk.getClientFactory();
       console.log(clientFactory);
       // Example JSON response for assets
       /*
@@ -114,7 +114,7 @@ export default function Template() {
           }
         ],
       };
-      await testSdk.addToTxnBuilder(params, "MyAutomation");
+      await sdk.addToTxnBuilder(params, "MyAutomation");
       // Example JSON params
       /*
       {

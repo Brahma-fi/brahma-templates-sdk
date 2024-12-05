@@ -16,6 +16,16 @@ or
 yarn add brahma-templates-sdk
 ```
 
+## Testing the App
+
+You can test this app on the following URL, which will run it as an iframe:
+
+```txt
+https://console-git-feat-custom-template-url-brahma.vercel.app/account/{consoleAddress}?templateUrl={yourLocalHostUrl}
+```
+
+Replace `{consoleAddress}` with your console address and `{yourLocalHostUrl}` with your local host URL.
+
 ### Main Functions
 
 The `TemplatesSDK` class provides the following main functions:
