@@ -27,7 +27,7 @@ The `TemplatesSDK` class provides the following main functions:
      - `eoa`: The externally owned account address.
      - `consoleAddress`: The console address.
      - `chainId`: The chain ID.
-     - `assets`: An array of [`TAsset`](/packages/brahma-templates-sdk/src/types.ts#L17) objects.
+     - `assets`: An array of [`TAsset`](/src/types.ts#L17) objects.
 
 2. **`addToTxnBuilder(params, automationName)`**:
    - **Description**: Adds transactions to the transaction builder for a specified automation.
@@ -42,6 +42,8 @@ The `TemplatesSDK` class provides the following main functions:
    - **Throws**: An error if no transactions are passed.
 
 ## Example
+
+Checkout the Drain-Account Example Template [here](/examples/template/)
 
 Here's a basic example of how to use the SDK in a React component:
 
@@ -146,10 +148,6 @@ export default function Template() {
   );
 }
 ```
-
-## Contributing
-
-Once you have tested your template, please make a pull request on the [Brahma Templates GitHub repository](/packages/brahma-templates).
 
 ## License
 
