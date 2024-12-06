@@ -21,7 +21,7 @@ yarn add brahma-templates-sdk
 You can test this app on the following URL, which will run it as an iframe:
 
 ```txt
-https://playground.dev.console.brahma.fi/account/{consoleAddress}?templateUrl={yourLocalHostUrl}
+https://playground.dev.console.brahma.fi/account/{consoleAddress}/custom-template?templateUrl={yourLocalHostUrl}
 ```
 
 Replace `{consoleAddress}` with your console address and `{yourLocalHostUrl}` with your local host URL.
