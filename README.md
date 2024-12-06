@@ -116,7 +116,7 @@ export default function Template() {
           }
         ],
       };
-      await sdk.addToTxnBuilder(params, "MyAutomation");
+      await sdk.builderCaller.addToTxnBuilder(params, "MyAutomation");
       // Example JSON params
       /*
       {
