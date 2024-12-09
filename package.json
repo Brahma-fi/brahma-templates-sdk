@@ -16,13 +16,15 @@
   },
   "dependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
+    "axios": "^1.7.9",
     "rollup-plugin-dts": "^6.1.1",
     "tslib": "^2.8.1",
     "viem": "^2.21.3"
   },
   "devDependencies": {
     "@types/react": "^18.3.5",
-    "rollup": "^4.28.0"
+    "rollup": "^4.28.0",
+    "typescript": "^5.7.2"
   },
   "author": "impolska742 <vaibhav19bhardwaj@gmail.com>",
   "license": "MIT"

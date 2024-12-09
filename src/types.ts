@@ -1,18 +1,7 @@
 import { Address } from "viem";
+import { AutomationLogResponse, AutomationSubscription } from "@/helpers/types";
 
-export type Template = {
-  name: string;
-  description: React.ReactNode | string;
-  bgImage: string;
-  docs: string;
-  comingSoon: boolean;
-  type: "Template";
-  getCustomView: () => React.ReactNode;
-  supportedChains: number[];
-  icon?: React.ReactNode;
-  isBeta?: boolean;
-  pageTitleIcon?: React.ReactNode;
-};
+export * from "@/helpers/types";
 
 export type TAsset = {
   name: string;
@@ -62,89 +51,11 @@ type BalanceOf = {
   value: bigint;
 };
 
-export type AddAutomationParams = {
-  tokenLimits: Record<`0x${string}`, string>;
-  tokenInputs: Record<`0x${string}`, string>;
-  registryId: string;
-  feeToken: Address;
-  feeAmount: string;
-  metadata: Record<string, any>;
-};
-
-export type AutomationSubscription = {
-  chainId: number;
-  commitHash: string;
-  createdAt: string;
-  duration: number;
-  feeAmount: string;
-  feeToken: Address;
-  id: string;
-  metadata: {
-    baseToken: string;
-    every: string;
-  };
-  registryId: string;
-  status: number; // 2 === active status
-  subAccountAddress: Address;
-  tokenInputs: Record<Address, string>;
-  tokenLimits: Record<Address, string>;
-};
-
-export type AutomationLogResponse = {
-  id: string;
-  subaccount_address: Address;
-  chain_id: number;
-  metadata: {
-    req: {
-      to: string;
-      data: string;
-      value: string;
-      chainID: number;
-      operation: number;
-      subaccount: Address;
-    };
-    taskID: string;
-    transitionState: {
-      prev: {
-        feesAmount: string;
-        inputAmount: string;
-        targetVault: Address;
-        generatedYield: string;
-      } | null;
-      current: {
-        feesAmount: "1000";
-        inputAmount: "7999";
-        targetVault: Address;
-        generatedYield: "-1";
-      };
-    };
-  };
-  message: string;
-  sub_id: string;
-  createdAt: string;
-  outputTxHash: string;
-};
-
 export type UserClientFactory = {
   eoa: Address;
   consoleAddress: Address;
   chainId: number;
   assets: TAsset[];
-};
-
-export type Transaction = {
-  toAddress: string;
-  callData: string;
-  value: bigint;
-};
-
-export type BuilderParams = {
-  transactions: Transaction[];
-};
-
-export type AddToTxnBuilderParams = {
-  params: BuilderParams;
-  automationName: string;
 };
 
 export interface Communicator {
@@ -169,6 +80,7 @@ export enum Methods {
   getClientFactory = "getClientFactory",
   addToTxnBuilder = "addToTxnBuilder",
   addAutomation = "addAutomation",
+  cancelAutomation = "cancelAutomation",
   fetchAutomationLogs = "fetchAutomationLogs",
   fetchAutomationSubscriptions = "fetchAutomationSubscriptions",
 }
@@ -179,6 +91,7 @@ export interface MethodToResponse {
   [Methods.getClientFactory]: UserClientFactory;
   [Methods.addToTxnBuilder]: void;
   [Methods.addAutomation]: void;
+  [Methods.cancelAutomation]: void;
   [Methods.fetchAutomationLogs]: AutomationLogResponse[];
   [Methods.fetchAutomationSubscriptions]: AutomationSubscription[];
 }
