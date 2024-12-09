@@ -2,6 +2,8 @@
 
 This document outlines the process for managing assets and deploying a Brahma Account using a pre-computed address. The flow involves several steps, from fetching assets to deploying the account and checking the deployment status.
 
+Checkout the Deployed App here - https://public-strategy-page.vercel.app/
+
 ```mermaid
 flowchart TD;
     A[Start] --> B[Fetch EOA Assets]
