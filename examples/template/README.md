@@ -21,10 +21,10 @@ yarn add brahma-templates-sdk
 You can test this app on the following URL, which will run it as an iframe:
 
 ```txt
-https://playground.dev.console.brahma.fi/account/{consoleAddress}/custom-template?templateUrl={yourLocalHostUrl}
+https://playground.dev.console.brahma.fi/account/{brahmaAccountAddress}/custom-template?templateUrl={yourLocalHostUrl}
 ```
 
-Replace `{consoleAddress}` with your console address and `{yourLocalHostUrl}` with your local host URL.
+Replace `{brahmaAccountAddress}` with your the Address of your Brahma Account and `{yourLocalHostUrl}` with your local host URL.
 
 ### Main Functions
 
@@ -35,7 +35,7 @@ The `TemplatesSDK` class provides the following main functions:
    - **Description**: Retrieves the user client factory details.
    - **Returns**: A `Promise` that resolves to a `UserClientFactory` object containing:
      - `eoa`: The externally owned account address.
-     - `consoleAddress`: The console address.
+     - `accountAddress`: The address of your Brahma Account.
      - `chainId`: The chain ID.
      - `assets`: An array of [`TAsset`](/packages/brahma-templates-sdk/src/types.ts#L17) objects.
 
@@ -75,7 +75,7 @@ export default function Template() {
       /*
       {
         "eoa": "0xYourEOAAddress",
-        "consoleAddress": "0xConsoleAddress",
+        "accountAddress": "0xConsoleAddress",
         "chainId": 1,
         "assets": [
           {

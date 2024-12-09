@@ -1,10 +1,10 @@
+import { Communicator, Methods } from "@/types";
 import {
-  Communicator,
-  Methods,
   AddAutomationParams,
   AddToTxnBuilderParams,
   BuilderParams,
-} from "../types";
+  CancelAutomationParams,
+} from "@/types";
 
 export class BuilderCaller {
   private readonly communicator: Communicator;
@@ -36,10 +36,22 @@ export class BuilderCaller {
   }
 
   async addAutomation(params: AddAutomationParams): Promise<void> {
-    // Implementation for adding automation
+    const response = await this.communicator.send<
+      Methods.addAutomation,
+      AddAutomationParams,
+      void
+    >(Methods.addAutomation, params);
+
+    return response.data;
   }
 
-  async cancelAutomation(): Promise<void> {
-    // Implementation for canceling automation
+  async cancelAutomation(params: CancelAutomationParams): Promise<void> {
+    const response = await this.communicator.send<
+      Methods.cancelAutomation,
+      CancelAutomationParams,
+      void
+    >(Methods.cancelAutomation, params);
+
+    return response.data;
   }
 }

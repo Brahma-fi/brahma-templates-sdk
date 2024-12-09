@@ -1,19 +1,5 @@
 import { Address } from "viem";
 
-export type Template = {
-  name: string;
-  description: React.ReactNode | string;
-  bgImage: string;
-  docs: string;
-  comingSoon: boolean;
-  type: "Template";
-  getCustomView: () => React.ReactNode;
-  supportedChains: number[];
-  icon?: React.ReactNode;
-  isBeta?: boolean;
-  pageTitleIcon?: React.ReactNode;
-};
-
 export type TAsset = {
   name: string;
   symbol?: string;
@@ -62,33 +48,68 @@ type BalanceOf = {
   value: bigint;
 };
 
-export type AddAutomationParams = {
-  tokenLimits: Record<`0x${string}`, string>;
-  tokenInputs: Record<`0x${string}`, string>;
-  registryId: string;
-  feeToken: Address;
-  feeAmount: string;
-  metadata: Record<string, any>;
+export type UserClientFactory = {
+  eoa: Address;
+  accountAddress: Address;
+  chainId: number;
+  assets: TAsset[];
 };
 
-export type AutomationSubscription = {
-  chainId: number;
-  commitHash: string;
-  createdAt: string;
-  duration: number;
-  feeAmount: string;
-  feeToken: Address;
-  id: string;
-  metadata: {
-    baseToken: string;
-    every: string;
+export interface Communicator {
+  send<M extends Methods, P = unknown, R = unknown>(
+    method: M,
+    params: P
+  ): Promise<SuccessResponse<R>>;
+}
+
+export type SDKRequestData<M extends Methods = Methods, P = unknown> = {
+  id: RequestId;
+  params: P;
+  env: {
+    sdkVersion: string;
   };
-  registryId: string;
-  status: number; // 2 === active status
-  subAccountAddress: Address;
-  tokenInputs: Record<Address, string>;
-  tokenLimits: Record<Address, string>;
+  method: M;
 };
+
+export type SDKMessageEvent = MessageEvent<SDKRequestData>;
+
+export enum Methods {
+  getClientFactory = "getClientFactory",
+  addToTxnBuilder = "addToTxnBuilder",
+  addAutomation = "addAutomation",
+  cancelAutomation = "cancelAutomation",
+}
+
+export type RequestId = string;
+
+export interface MethodToResponse {
+  [Methods.getClientFactory]: UserClientFactory;
+  [Methods.addToTxnBuilder]: void;
+  [Methods.addAutomation]: void;
+  [Methods.cancelAutomation]: void;
+}
+
+export type ErrorResponse = {
+  id: RequestId;
+  success: false;
+  error: string;
+  version?: string;
+};
+
+export type SuccessResponse<T = MethodToResponse[Methods]> = {
+  id: RequestId;
+  data: T;
+  version?: string;
+  success: true;
+};
+
+export type InterfaceMessageEvent = MessageEvent<Response>;
+
+export type Response<T = MethodToResponse[Methods]> =
+  | ErrorResponse
+  | SuccessResponse<T>;
+
+/********  Automation Context Types     **********/
 
 export type AutomationLogResponse = {
   id: string;
@@ -125,12 +146,26 @@ export type AutomationLogResponse = {
   outputTxHash: string;
 };
 
-export type UserClientFactory = {
-  eoa: Address;
-  consoleAddress: Address;
+export type AutomationSubscription = {
   chainId: number;
-  assets: TAsset[];
+  commitHash: string;
+  createdAt: string;
+  duration: number;
+  feeAmount: string;
+  feeToken: Address;
+  id: string;
+  metadata: {
+    baseToken: string;
+    every: string;
+  };
+  registryId: string;
+  status: number; // 2 === active status
+  subAccountAddress: Address;
+  tokenInputs: Record<Address, string>;
+  tokenLimits: Record<Address, string>;
 };
+
+/********  Builder Caller Types **************/
 
 export type Transaction = {
   toAddress: string;
@@ -147,57 +182,84 @@ export type AddToTxnBuilderParams = {
   automationName: string;
 };
 
-export interface Communicator {
-  send<M extends Methods, P = unknown, R = unknown>(
-    method: M,
-    params: P
-  ): Promise<SuccessResponse<R>>;
-}
+export type AddAutomationParams = {
+  tokenLimits: Record<`0x${string}`, string>;
+  tokenInputs: Record<`0x${string}`, string>;
+  registryId: string;
+  feeToken: Address;
+  feeAmount: string;
+  metadata: Record<string, any>;
+};
 
-export type SDKRequestData<M extends Methods = Methods, P = unknown> = {
-  id: RequestId;
-  params: P;
-  env: {
-    sdkVersion: string;
+export type CancelAutomationParams = {
+  subaccount: Address;
+};
+
+/********* Public Deployer Types *************/
+
+export type AutomationSubscriptionLimits = {
+  duration: number;
+  tokenInputs: Record<Address, string>;
+  tokenLimits: Record<Address, string>;
+};
+
+export type PreComputedAddressData = {
+  precomputedAddress: Address;
+  feeEstimate: string;
+  feeEstimateSignature: string;
+};
+
+export type TransferCalldataResponse = {
+  signaturePayload: {
+    domain: {
+      verifyingContract: Address;
+      chainId: string;
+      name: string;
+      salt: string;
+      version: string;
+    };
+    message: {
+      to: Address;
+      baseGas: number;
+      data: string;
+      gasPrice: number;
+      gasToken: Address;
+      nonce: number;
+      operation: number;
+      refundReceiver: Address;
+      safeTxGas: number;
+      value: number;
+    };
+    primaryType: "SafeTx";
+    types: {
+      SafeTx: {
+        name: string;
+        type: string;
+      }[];
+    };
   };
-  method: M;
+  subAccountPolicyCommit: string;
+  subscriptionDraftID: string;
 };
 
-export type SDKMessageEvent = MessageEvent<SDKRequestData>;
+export type TaskIdStatusType =
+  | "pending"
+  | "executing"
+  | "cancelled"
+  | "successful"
+  | "failed";
 
-export enum Methods {
-  getClientFactory = "getClientFactory",
-  addToTxnBuilder = "addToTxnBuilder",
-  addAutomation = "addAutomation",
-  fetchAutomationLogs = "fetchAutomationLogs",
-  fetchAutomationSubscriptions = "fetchAutomationSubscriptions",
-}
-
-export type RequestId = string;
-
-export interface MethodToResponse {
-  [Methods.getClientFactory]: UserClientFactory;
-  [Methods.addToTxnBuilder]: void;
-  [Methods.addAutomation]: void;
-  [Methods.fetchAutomationLogs]: AutomationLogResponse[];
-  [Methods.fetchAutomationSubscriptions]: AutomationSubscription[];
-}
-
-export type ErrorResponse = {
-  id: RequestId;
-  success: false;
-  error: string;
-  version?: string;
+export type TaskStatusData = {
+  taskId: string;
+  metadata: {
+    request: unknown;
+    response: {
+      isSuccessful: boolean;
+      error: string | null;
+      transactionHash: string | null;
+    };
+  };
+  outputTransactionHash: string | null;
+  status: TaskIdStatusType;
+  createdAt: string;
 };
-
-export type SuccessResponse<T = MethodToResponse[Methods]> = {
-  id: RequestId;
-  data: T;
-  version?: string;
-  success: true;
-};
-export type InterfaceMessageEvent = MessageEvent<Response>;
-
-export type Response<T = MethodToResponse[Methods]> =
-  | ErrorResponse
-  | SuccessResponse<T>;

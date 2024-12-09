@@ -16,30 +16,87 @@ or
 yarn add brahma-templates-sdk
 ```
 
-### Main Functions
+## Overview
 
-The `TemplatesSDK` class provides the following main functions:
+The SDK is structured into three main components, each handling specific functionalities:
 
-1. **`getClientFactory()`**:
+### 1. Automation Context Fetcher
 
-   - **Description**: Retrieves the user client factory details.
-   - **Returns**: A `Promise` that resolves to a `UserClientFactory` object containing:
-     - `eoa`: The externally owned account address.
-     - `consoleAddress`: The console address.
-     - `chainId`: The chain ID.
-     - `assets`: An array of [`TAsset`](/src/types.ts#L17) objects.
+Responsible for fetching automation logs and subscriptions. Utilizes HTTP GET requests to interact with the Brahma backend.
 
-2. **`addToTxnBuilder(params, automationName)`**:
-   - **Description**: Adds transactions to the transaction builder for a specified automation.
-   - **Parameters**:
-     - `params`: An object of type `BuilderParams` containing:
-       - `transactions`: An array of `Transaction` objects, each with:
-         - `toAddress`: The address to send the transaction to.
-         - `callData`: The calldata for the transaction.
-         - `value`: The value to send with the transaction.
-     - `automationName`: A string representing the name of the automation.
-   - **Returns**: A `Promise` that resolves to `void`.
-   - **Throws**: An error if no transactions are passed.
+#### Automation Context Fetcher Functions
+
+- **`fetchAutomationLogs(automationId: string): Promise<AutomationLogResponse[]>`**
+  - **Description**: Fetches logs for a specific automation.
+  - **Parameters**:
+    - `automationId`: A string representing the unique ID of the automation.
+  - **Returns**: A `Promise` that resolves to an array of `AutomationLogResponse` objects.
+
+- **`fetchAutomationSubscriptions(accountAddress: Address, chainId: number): Promise<AutomationSubscription[]>`**
+  - **Description**: Retrieves subscriptions for a given account and chain ID.
+  - **Parameters**:
+    - `accountAddress`: The address of the account (`Address` type).
+    - `chainId`: The blockchain network ID (`number` type).
+  - **Returns**: A `Promise` that resolves to an array of `AutomationSubscription` objects.
+
+### 2. Builder Caller
+
+Manages transaction building and automation operations. Communicates with a parent iFrame using a `Communicator` interface.
+
+#### Builder Caller Functions
+
+- **`addToTxnBuilder(params: BuilderParams, automationName: string): Promise<void>`**
+  - **Description**: Adds transactions to the transaction builder for a specified automation.
+  - **Parameters**:
+    - `params`: An object of type `BuilderParams` containing:
+      - `transactions`: An array of `Transaction` objects, each with:
+        - `toAddress`: The address to send the transaction to.
+        - `callData`: The calldata for the transaction.
+        - `value`: The value to send with the transaction.
+    - `automationName`: A string representing the name of the automation.
+  - **Returns**: A `Promise` that resolves to `void`.
+
+- **`addAutomation(params: AddAutomationParams): Promise<void>`**
+  - **Description**: Adds a new automation with specified parameters.
+  - **Parameters**:
+    - `params`: An object of type `AddAutomationParams`.
+  - **Returns**: A `Promise` that resolves to `void`.
+
+- **`cancelAutomation(params: CancelAutomationParams): Promise<void>`**
+  - **Description**: Cancels an existing automation.
+  - **Parameters**:
+    - `params`: An object of type `CancelAutomationParams`.
+  - **Returns**: A `Promise` that resolves to `void`.
+
+### 3. Public Deployer
+
+Handles the deployment of new Brahma Accounts and related operations. Makes HTTP POST requests to deploy accounts and manage user strategies.
+
+#### Public Deployer Functions
+
+- **`fetchPreComputeAddress(owner: Address, chainId: number, feeToken: Address): Promise<PreComputedAddressData | null>`**
+  - **Description**: Fetches precomputed address data for a given owner, chain ID, and fee token.
+  - **Parameters**:
+    - `owner`: The address of the owner (`Address` type).
+    - `chainId`: The blockchain network ID (`number` type).
+    - `feeToken`: The address of the fee token (`Address` type).
+  - **Returns**: A `Promise` that resolves to `PreComputedAddressData` or `null`.
+
+- **`generateAutomationSubAccount(owner: Address, precomputedConsoleAddress: Address, chainID: number, registryID: string, feeToken: Address, feeEstimate: string, tokens: Address[], amounts: string[], automationSubscriptionLimits: AutomationSubscriptionLimits): Promise<TransferCalldataResponse | null>`**
+  - **Description**: Generates an automation sub-account for a given set of parameters.
+  - **Parameters**: Various parameters including owner address, precomputed console address, chain ID, registry ID, fee token, fee estimate, tokens, amounts, and subscription limits.
+  - **Returns**: A `Promise` that resolves to `TransferCalldataResponse` or `null`.
+
+- **`deployBrahmaAccount(owner: Address, chainID: number, registryID: string, subscriptionDraftID: string, subAccountPolicyCommit: string, feeToken: Address, tokens: Address[], amounts: string[], subAccountChainerSignature: string, feeEstimateSignature: string, feeEstimate: string, metadata: Record<string, unknown>): Promise<{ taskId: string } | null>`**
+  - **Description**: Deploys an account and sub-account with the given parameters.
+  - **Parameters**: Various parameters including owner address, chain ID, registry ID, subscription draft ID, sub-account policy commit, fee token, tokens, amounts, sub-account chainer signature, fee estimate signature, fee estimate, and metadata.
+  - **Returns**: A `Promise` that resolves to an object containing `taskId` or `null`.
+
+- **`fetchDeploymentStatus(taskId: string): Promise<TaskStatusData>`**
+  - **Description**: Fetches the status of a task by its ID.
+  - **Parameters**:
+    - `taskId`: The ID of the task (`string` type).
+  - **Returns**: A `Promise` that resolves to `TaskStatusData`.
 
 ## Example
 
@@ -51,7 +108,7 @@ Here's a basic example of how to use the SDK in a React component:
 import React, { useState } from 'react';
 import { TemplatesSDK } from 'brahma-templates-sdk';
 
-const sdk = new TemplatesSDK();
+const sdk = new TemplatesSDK('your-api-key');
 
 export default function Template() {
   const [value, setValue] = useState(false);
@@ -61,39 +118,6 @@ export default function Template() {
     try {
       const clientFactory = await sdk.getClientFactory();
       console.log(clientFactory);
-      // Example JSON response for assets
-      /*
-      {
-        "eoa": "0xYourEOAAddress",
-        "consoleAddress": "0xConsoleAddress",
-        "chainId": 1,
-        "assets": [
-          {
-            "address": "0x0000000000000000000000000000000000000000",
-            "balanceOf": {
-              "decimals": 18,
-              "formatted": "0.006461781144746279",
-              "symbol": "ETH",
-              "value": 6461781144746279n
-            },
-            "chainId": 81457,
-            "core": true,
-            "decimals": 18,
-            "isActive": true,
-            "isVerified": true,
-            "logo": "https://brahma-static.s3.us-east-2.amazonaws.com/Asset/Asset%3DETH.svg",
-            "name": "ETH",
-            "prices": {
-              "default": 3931.43
-            },
-            "symbol": "ETH",
-            "updatedAt": "2024-02-28T20:44:00.526451Z",
-            "value": "25.404040245889864072",
-            "verified": true
-          }
-        ]
-      }
-      */
     } catch (error) {
       console.error("Error fetching client factory:", error);
     }
@@ -117,24 +141,6 @@ export default function Template() {
         ],
       };
       await sdk.builderCaller.addToTxnBuilder(params, "MyAutomation");
-      // Example JSON params
-      /*
-      {
-        "transactions": [
-          {
-            "toAddress": "0x123...",
-            "callData": "0xabc...",
-            "value": 1000
-          },
-          {
-            "toAddress": "0x456...",
-            "callData": "0xdef...",
-            "value": 2000
-          }
-        ],
-        "automationName": "MyAutomation"
-      }
-      */
     } catch (error) {
       console.error("Error adding to transaction builder:", error);
     }
