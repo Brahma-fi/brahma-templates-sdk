@@ -170,7 +170,6 @@ const Strategy = () => {
     } catch (error) {
       setShowIframePrompt(true);
       console.log("error", error);
-      console.error("An error occurred while fetching assets:", error);
     } finally {
       setLoading(false);
     }
@@ -205,7 +204,6 @@ const Strategy = () => {
     } catch (error) {
       setShowIframePrompt(true);
       console.log("error", error);
-      console.error("An error occurred while fetching assets:", error);
     }
   }
 
@@ -247,7 +245,6 @@ const Strategy = () => {
       } catch (error) {
         setShowIframePrompt(true);
         console.log("error", error);
-        console.error("An error occurred while fetching assets:", error);
       }
     }
 

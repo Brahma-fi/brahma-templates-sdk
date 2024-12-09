@@ -14,35 +14,16 @@ yarn add brahma-templates-sdk
 
 ## Initialization
 
-After installing the SDK, you can initialize the `TestSDK` class in your project:
+After installing the SDK, you can initialize the `Templates` class in your project:
 
 ```typescript
-import React, { useState } from 'react';
-import { TemplatesSDK } from 'brahma-templates-sdk';
+import React, { useState } from "react";
+import { TemplatesSDK } from "brahma-templates-sdk";
 
 const apiKey = "your-api-key";
 
 const sdk = new TemplatesSDK(apiKey);
 ```
-
-## SDK Functions
-
-The `TemplatesSDK` provides several functions for different use cases:
-
-1. **getClientFactory()**:
-   - Returns the `chainId`, connected Brahma account address, assets of the Brahma account, and connected EOA.
-
-2. **addAutomation(params)**:
-   - Adds a new automation with the specified parameters.
-
-3. **fetchAutomationSubscriptions(account, chainId)**:
-   - Returns the already running automations for the connected Brahma Account.
-
-4. **fetchAutomationLogs(automationId)**:
-   - Returns logs for the specified `automationId`.
-
-5. **addToTxnBuilder(params, templateName)**:
-   - Passes an array of transactions with calldata, to, and value to run the specific transaction.
 
 ## Usage Example
 
@@ -56,6 +37,60 @@ async function fetchDetails() {
     // Use the clientFactory data as needed
   } catch (error) {
     console.error("An error occurred while fetching details:", error);
+  }
+}
+
+async function handleAddAutomation() {
+  try {
+    // Update token inputs
+    const tokenInputs: Record<Address, string> = {};
+
+    // Update token limits
+    const tokenLimits: Record<Address, string> = {};
+
+    await sdk.builderCaller.addAutomation({
+      feeAmount: "0",
+      feeToken: zeroAddress,
+      metadata: {},
+      registryId: HARDCODED_REGISTRY_ID,
+      tokenInputs,
+      tokenLimits,
+    });
+  } catch (error) {
+    setShowIframePrompt(true);
+    console.log("error", error);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function fetchAutomations() {
+  try {
+    const automations =
+      await sdk.automationContextFetcher.fetchAutomationSubscriptions(
+        accountAddress,
+        chainId
+      );
+
+    setAutomations(activeAutomations);
+  } catch (error) {
+    setShowIframePrompt(true);
+    console.log("error", error);
+    console.error("An error occurred while fetching assets:", error);
+  }
+}
+
+async function fetchSelectedAutomationLogs() {
+  try {
+    const logs =
+      (await sdk.automationContextFetcher.fetchAutomationLogs(
+         automationId
+      )) || [];
+
+    setSelectedAutomationLogs(logs);
+  } catch (error) {
+    setShowIframePrompt(true);
+    console.log("error", error);
   }
 }
 ```

@@ -37,7 +37,7 @@ flowchart TD;
 
 ### 3. Fetch Pre-Computed Address
 
-- Call `fetchPreComputedConsoleAddress` to get the pre-computed address, fee estimate, and signature. See the API call in [`fetchPreComputeAddress`](./src/utils/api.ts#L29).
+- Call `fetchPreComputedConsoleAddress` to get the pre-computed address, fee estimate, and signature.
 
 ### 4. Check Deposit Against Gas Cost
 
@@ -49,18 +49,11 @@ flowchart TD;
 
 ### 6. Deploy Brahma Account
 
-- Use `generateAndDeploySubAccount` to generate and deploy the account using the APIs `generateAutomationSubAccount` and `deployConsoleAndSubAccount`. See the API calls in [`generateAutomationSubAccount`](./src/utils/api.ts#L61) and [`deployConsoleAndSubAccount`](./src/utils/api.ts#L112).
+- Use `generateAndDeploySubAccount` to generate and deploy the account using the public deployer from `brahma-templates-sdk` calling the functions `generateAutomationSubAccount` and `deployConsoleAndSubAccount`.
 
 ### 7. Poll for Deployment Status
 
-- Use `fetchDeploymentStatus` to poll the deployment status using the `fetchTaskStatus` API. See the API call in [`fetchTaskStatus`](./src/utils/api.ts#L159).
-
-## API Endpoints
-
-- **fetchPreComputeAddress**: [`/deployer/public-strategy/precompute`](./src/utils/api.ts#L29)
-- **generateAutomationSubAccount**: [`/deployer/public-strategy/signature`](./src/utils/api.ts#L61)
-- **deployConsoleAndSubAccount**: [`/deployer/public-strategy/deploy`](./src/utils/api.ts#L112)
-- **fetchTaskStatus**: [`/relayer/tasks/status`](./src/utils/api.ts#L159)
+- Use `fetchDeploymentStatus` to poll the deployment status using the `fetchTaskStatus` from the `brahma-templates-sdk`'s public deployer.
 
 ## Error Handling
 
