@@ -4,7 +4,7 @@ import {
   AddToTxnBuilderParams,
   BuilderParams,
   CancelAutomationParams,
-} from "./types";
+} from "@/types";
 
 export class BuilderCaller {
   private readonly communicator: Communicator;

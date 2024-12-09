@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  AutomationLogResponse,
-  AutomationSubscription,
-  TAsset,
-  TestSDK,
-} from "brahma-templates-sdk";
+import { TAsset, TemplatesSDK } from "brahma-templates-sdk";
 import { Address, zeroAddress } from "viem";
 import { Token } from "@/types";
 import {
@@ -24,16 +19,9 @@ import { parseUnits } from "@/utils";
 
 const HARDCODED_REGISTRY_ID = "f7b8c17b-1a8b-4707-a397-31f19057250b";
 
-// Import the test sdk class and initialize the object
-// testSdk contains 5 main functions for different use-case -
-// 1. getClientFactory() - Returns chainId, connected Brahma account address,
-// assets of the Brahma account, connected EOA
-// 2. addAutomation(params) - Add a new automation
-// 3. fetchAutomationSubscriptions(account, chainId) - Returns the already running automations for the connnected Brahma Account
-// 4. fetchAutomationLogs(automationId) - Returns logs for the automationId
-// 5. addToTxnBuilder(params, templateName) - Pass the array of transactions with calldata, to, value
-// to run the specific txn
-const testSdk = new TestSDK();
+const API_KEY = "<your-api-key>";
+
+const sdk = new TemplatesSDK(API_KEY);
 
 const Strategy = () => {
   const [assets, setAssets] = useState<TAsset[]>([]);

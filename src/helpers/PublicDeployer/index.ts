@@ -5,9 +5,9 @@ import {
   PreComputedAddressData,
   TaskStatusData,
   TransferCalldataResponse,
-} from "./types";
+  Communicator,
+} from "@/types";
 import { axiosInstance, routes } from "./api";
-import { Communicator } from "@/types";
 
 export class PublicDeployer {
   private readonly communicator: Communicator;

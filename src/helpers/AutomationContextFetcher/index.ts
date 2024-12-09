@@ -1,7 +1,11 @@
 import { Address } from "viem";
 
-import { Communicator, Methods } from "@/types";
-import { AutomationLogResponse, AutomationSubscription } from "./types";
+import {
+  AutomationLogResponse,
+  AutomationSubscription,
+  Communicator,
+  Methods,
+} from "@/types";
 
 export class AutomationContextFetcher {
   private readonly communicator: Communicator;
