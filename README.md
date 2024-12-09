@@ -25,7 +25,7 @@ The `TemplatesSDK` class provides the following main functions:
    - **Description**: Retrieves the user client factory details.
    - **Returns**: A `Promise` that resolves to a `UserClientFactory` object containing:
      - `eoa`: The externally owned account address.
-     - `consoleAddress`: The console address.
+     - `consoleAddress`: The Brahma Account Address.
      - `chainId`: The chain ID.
      - `assets`: An array of [`TAsset`](/src/types.ts#L17) objects.
 

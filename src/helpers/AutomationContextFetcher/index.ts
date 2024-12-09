@@ -6,6 +6,7 @@ import {
   Communicator,
   Methods,
 } from "@/types";
+import { axiosInstance, routes } from "../api";
 
 export class AutomationContextFetcher {
   private readonly communicator: Communicator;
@@ -17,30 +18,49 @@ export class AutomationContextFetcher {
   async fetchAutomationLogs(
     automationId: string
   ): Promise<AutomationLogResponse[]> {
-    const response = await this.communicator.send<
-      Methods.fetchAutomationLogs,
-      string,
-      AutomationLogResponse[]
-    >(Methods.fetchAutomationLogs, automationId);
+    try {
+      if (!automationId) {
+        throw new Error("Automation ID is required");
+      }
 
-    return response.data;
+      const response = await axiosInstance.get(
+        `${routes.fetchAutomationLogs}/${automationId}`
+      );
+
+      if (!response.data.data) {
+        throw new Error("No logs found for the given automation ID");
+      }
+
+      return response.data.data;
+    } catch (err: any) {
+      console.error(`Error fetching automation logs: ${err.message}`);
+      return [];
+    }
   }
 
   async fetchAutomationSubscriptions(
     consoleAddress: Address,
     chainId: number
   ): Promise<AutomationSubscription[]> {
-    const messagePayload = {
-      consoleAddress,
-      chainId,
-    };
+    try {
+      if (!consoleAddress || !chainId) {
+        throw new Error("Console address and chain ID are required");
+      }
 
-    const response = await this.communicator.send<
-      Methods.fetchAutomationSubscriptions,
-      { consoleAddress: Address; chainId: number },
-      AutomationSubscription[]
-    >(Methods.fetchAutomationSubscriptions, messagePayload);
+      const response = await axiosInstance.get(
+        `${routes.fetchAutomationSubscriptions}/${consoleAddress}/${chainId}`
+      );
 
-    return response.data;
+      if (!response.data.data) {
+        throw new Error(
+          "No subscriptions found for the given console address and chain ID"
+        );
+      }
+
+      return response.data;
+    } catch (err: any) {
+      console.error(`Error fetching automation subscriptions: ${err.message}`);
+      return [];
+    }
   }
 }

@@ -78,8 +78,6 @@ export enum Methods {
   addToTxnBuilder = "addToTxnBuilder",
   addAutomation = "addAutomation",
   cancelAutomation = "cancelAutomation",
-  fetchAutomationLogs = "fetchAutomationLogs",
-  fetchAutomationSubscriptions = "fetchAutomationSubscriptions",
 }
 
 export type RequestId = string;
@@ -89,8 +87,6 @@ export interface MethodToResponse {
   [Methods.addToTxnBuilder]: void;
   [Methods.addAutomation]: void;
   [Methods.cancelAutomation]: void;
-  [Methods.fetchAutomationLogs]: AutomationLogResponse[];
-  [Methods.fetchAutomationSubscriptions]: AutomationSubscription[];
 }
 
 export type ErrorResponse = {
@@ -106,6 +102,7 @@ export type SuccessResponse<T = MethodToResponse[Methods]> = {
   version?: string;
   success: true;
 };
+
 export type InterfaceMessageEvent = MessageEvent<Response>;
 
 export type Response<T = MethodToResponse[Methods]> =

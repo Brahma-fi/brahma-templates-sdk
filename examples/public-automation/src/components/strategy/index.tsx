@@ -387,6 +387,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
 
                 <HrLine />
 
+                {/* This is the template which will run in the iframe once console is deployed */}
                 <SelectedTokens
                   feeToken={feeToken}
                   selectedTokens={selectedTokens}

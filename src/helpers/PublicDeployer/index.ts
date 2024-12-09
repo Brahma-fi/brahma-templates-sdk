@@ -7,7 +7,7 @@ import {
   TransferCalldataResponse,
   Communicator,
 } from "@/types";
-import { axiosInstance, routes } from "./api";
+import { axiosInstance, routes } from "../api";
 
 export class PublicDeployer {
   private readonly communicator: Communicator;
@@ -77,7 +77,6 @@ export class PublicDeployer {
       tokens,
       amounts,
     };
-
     try {
       const response = await axiosInstance.post(
         routes.fetchDeployerSignature,

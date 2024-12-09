@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
-import { TAsset, TemplatesSDK } from "brahma-templates-sdk";
+import {
+  AutomationLogResponse,
+  AutomationSubscription,
+  TAsset,
+  TemplatesSDK,
+} from "brahma-templates-sdk";
 import { Address, zeroAddress } from "viem";
+
 import { Token } from "@/types";
 import {
   Button,
@@ -82,7 +88,7 @@ const Strategy = () => {
     console.log("fetching assets...");
     setLoading(true);
     try {
-      const clientFactory = await testSdk.getClientFactory();
+      const clientFactory = await sdk.getClientFactory();
       console.log("Client factory response:", clientFactory);
 
       if (!clientFactory) {
@@ -153,7 +159,7 @@ const Strategy = () => {
         {} as Record<Address, string>
       );
 
-      await testSdk.addAutomation({
+      await sdk.builderCaller.addAutomation({
         feeAmount: "0",
         feeToken: zeroAddress,
         metadata: {},
@@ -181,10 +187,11 @@ const Strategy = () => {
     }
 
     try {
-      const automations = await testSdk.fetchAutomationSubscriptions(
-        consoleAddress,
-        chainId
-      );
+      const automations =
+        await sdk.automationContextFetcher.fetchAutomationSubscriptions(
+          consoleAddress,
+          chainId
+        );
 
       // filter by registry ID and status
       const activeAutomations = automations.filter(
@@ -232,7 +239,9 @@ const Strategy = () => {
       try {
         // for every automation, fetch logs and append into new array with automation details and logs
         const logs =
-          (await testSdk.fetchAutomationLogs(selectedAutomation.id)) || [];
+          (await sdk.automationContextFetcher.fetchAutomationLogs(
+            selectedAutomation.id
+          )) || [];
 
         setSelectedAutomationLogs(logs);
       } catch (error) {

@@ -1,19 +1,18 @@
 import { create } from "zustand";
+import { TemplatesSDK } from "brahma-templates-sdk";
 import { signTypedData } from "@wagmi/core";
 import { Address, fromHex } from "viem";
+
 import { TaskIdStatusType } from "./types";
 import { SupportedChainIds, TAsset } from "@/types";
-import {
-  deployConsoleAndSubAccount,
-  fetchAssetsBalanceMultiCall,
-  fetchPreComputeAddress,
-  fetchTaskStatus,
-  generateAutomationSubAccount,
-  sortAssets,
-} from "@/utils";
+import { fetchAssetsBalanceMultiCall, sortAssets } from "@/utils";
 import { SCAM_TOKEN_WORDS } from "@/constants";
 import { wagmiConfig } from "@/wagmi";
 import { dispatchToast } from "../shared/components";
+
+const API_KEY = "<your-api-key>";
+
+const sdk = new TemplatesSDK(API_KEY);
 
 type Store = {
   loading: boolean;
@@ -70,7 +69,11 @@ const useStore = create<Store>((set, get) => ({
   fetchPreComputedConsoleAddress: async (owner, chainId, feeToken) => {
     set((state) => ({ ...state, loading: true }));
     try {
-      const data = await fetchPreComputeAddress(owner, chainId, feeToken);
+      const data = await sdk.publicDeployer.fetchPreComputeAddress(
+        owner,
+        chainId,
+        feeToken
+      );
 
       if (
         !data ||
@@ -130,21 +133,22 @@ const useStore = create<Store>((set, get) => ({
     set((state) => ({ ...state, loading: true }));
     try {
       // Generate Automation SubAccount
-      const generateData = await generateAutomationSubAccount(
-        eoa,
-        preComputedConsoleAddress,
-        chainId,
-        HARDCODED_REGISTRY_ID,
-        feeToken,
-        feeEstimate,
-        tokens,
-        amounts,
-        {
-          duration: 0,
-          tokenInputs: {},
-          tokenLimits: {},
-        }
-      );
+      const generateData =
+        await sdk.publicDeployer.generateAutomationSubAccount(
+          eoa,
+          preComputedConsoleAddress,
+          chainId,
+          HARDCODED_REGISTRY_ID,
+          feeToken,
+          feeEstimate,
+          tokens,
+          amounts,
+          {
+            duration: 0,
+            tokenInputs: {},
+            tokenLimits: {},
+          }
+        );
 
       if (!generateData || !feeEstimateSignature) {
         dispatchToast({
@@ -186,8 +190,8 @@ const useStore = create<Store>((set, get) => ({
         return;
       }
 
-      // Deploy Console and SubAccount
-      const deployData = await deployConsoleAndSubAccount(
+      // Deploy Brahma Account
+      const deployData = await sdk.publicDeployer.deployBrahmaAccount(
         eoa,
         chainId,
         HARDCODED_REGISTRY_ID,
@@ -247,7 +251,7 @@ const useStore = create<Store>((set, get) => ({
   },
   fetchDeploymentStatus: async (taskId) => {
     try {
-      const data = await fetchTaskStatus(taskId);
+      const data = await sdk.publicDeployer.fetchDeploymentStatus(taskId);
 
       if (!data) {
         dispatchToast({
