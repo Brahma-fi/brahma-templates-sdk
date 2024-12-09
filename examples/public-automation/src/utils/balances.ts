@@ -7,7 +7,7 @@ import { formatUnits } from "./actions";
 import { wagmiConfig } from "../wagmi";
 
 type FetchContractBalance = {
-  consoleAddress: Address;
+  accountAddress: Address;
   assets: TAsset[];
 };
 
@@ -28,7 +28,7 @@ type TokenMultiCall = TokenCall[];
 const MULTI_CALL_FUNCTIONS = ["balanceOf"];
 
 export const fetchAssetsBalanceMultiCall = async ({
-  consoleAddress,
+  accountAddress,
   assets,
 }: FetchContractBalance): Promise<TAsset[]> => {
   try {
@@ -50,7 +50,7 @@ export const fetchAssetsBalanceMultiCall = async ({
         {
           ...erc20Config,
           functionName: MULTI_CALL_FUNCTIONS[0],
-          args: [consoleAddress],
+          args: [accountAddress],
         },
       ];
     };
@@ -68,7 +68,7 @@ export const fetchAssetsBalanceMultiCall = async ({
         {
           ...callConfig,
           functionName: "getEthBalance",
-          args: [consoleAddress],
+          args: [accountAddress],
         },
       ];
     };

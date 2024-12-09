@@ -154,7 +154,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         title: "Funds Deposited",
         type: "success",
         description: {
-          value: "Funds have been deposited to the pre-computed console",
+          value: "Funds have been deposited to the pre-computed account",
         },
       });
     } catch (err: any) {
@@ -186,7 +186,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         title: "Error deploying console",
         type: "error",
         description: {
-          value: "Missing required information for console deployment",
+          value: "Missing required information for account deployment",
         },
       });
       return;
@@ -220,7 +220,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
     ) {
       dispatchToast({
         id: "console-deploy-error",
-        title: "Error deploying console",
+        title: "Error deploying account",
         type: "error",
         description: {
           value: "Token amount cannot be zero",
@@ -251,13 +251,13 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         amounts
       );
     } catch (err: any) {
-      console.error("Error deploying console:", err);
+      console.error("Error deploying Brahma Account:", err);
       dispatchToast({
-        id: "console-deploy-error",
-        title: "Error deploying console",
+        id: "deploy-error",
+        title: "Error deploying Account",
         type: "error",
         description: {
-          value: "An error occurred during console deployment",
+          value: "An error occurred during Brahma Account deployment",
         },
       });
     } finally {
@@ -387,7 +387,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
 
                 <HrLine />
 
-                {/* This is the template which will run in the iframe once console is deployed */}
+                {/* This is the template which will run in the iframe once Brahma account is deployed */}
                 <SelectedTokens
                   feeToken={feeToken}
                   selectedTokens={selectedTokens}
@@ -409,7 +409,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
                 ) : (
                   fundsDeposited && (
                     <InformationBar accent="success">
-                      You have sufficient funds in the pre-computed console to
+                      You have sufficient funds in the pre-computed account to
                       cover the deployment fee. You can continue without
                       depositing additional funds.
                     </InformationBar>
@@ -428,7 +428,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
             <GrayBoundaryBlackWrapper padding="0.2rem">
               <ContentWrapper>
                 <Typography type="BODY_MEDIUM_S">
-                  Strategy will automatically create a Console
+                  Strategy will automatically create a Brahma Account
                 </Typography>
               </ContentWrapper>
               <ContentWrapper>
@@ -522,7 +522,9 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
                 disabled={isDeployButtonDisabled || consoleDeployedLoading}
               >
                 <Typography type="BODY_MEDIUM_S">
-                  {consoleDeployedLoading ? "Deploying ..." : "Deploy Console"}
+                  {consoleDeployedLoading
+                    ? "Deploying ..."
+                    : "Deploy Brahma Account"}
                 </Typography>
               </Button>
             </FlexContainer>

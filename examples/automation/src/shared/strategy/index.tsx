@@ -33,7 +33,7 @@ const Strategy = () => {
   const [assets, setAssets] = useState<TAsset[]>([]);
   const [eoa, setEOA] = useState<Address>("" as Address);
   const [chainId, setChainId] = useState<number>(0);
-  const [consoleAddress, setConsoleAddress] = useState<Address>("" as Address);
+  const [accountAddress, setAccountAddress] = useState<Address>("" as Address);
   const [automations, setAutomations] = useState<AutomationSubscription[]>([]);
   const [selectedAutomation, setSelectedAutomation] =
     useState<AutomationSubscription | null>(null);
@@ -106,13 +106,13 @@ const Strategy = () => {
       const chainId = clientFactory.chainId;
       console.log("Chain ID obtained:", eoa);
 
-      const consoleAddress = clientFactory.consoleAddress;
-      console.log("Account address obtained:", consoleAddress);
+      const accountAddress = clientFactory.accountAddress;
+      console.log("Account address obtained:", accountAddress);
 
       setAssets(assets);
       setEOA(eoa);
       setChainId(chainId);
-      setConsoleAddress(consoleAddress);
+      setAccountAddress(accountAddress);
     } catch (error) {
       setShowIframePrompt(true);
       console.log("error", error);
@@ -177,7 +177,7 @@ const Strategy = () => {
   }
 
   async function fetchAutomations() {
-    if (!consoleAddress) {
+    if (!accountAddress) {
       dispatchToast({
         id: "console-deploy-error",
         title: "Brahma Account Address not found",
@@ -189,7 +189,7 @@ const Strategy = () => {
     try {
       const automations =
         await sdk.automationContextFetcher.fetchAutomationSubscriptions(
-          consoleAddress,
+          accountAddress,
           chainId
         );
 

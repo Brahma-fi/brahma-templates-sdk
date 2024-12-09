@@ -39,21 +39,21 @@ export class AutomationContextFetcher {
   }
 
   async fetchAutomationSubscriptions(
-    consoleAddress: Address,
+    accountAddress: Address,
     chainId: number
   ): Promise<AutomationSubscription[]> {
     try {
-      if (!consoleAddress || !chainId) {
-        throw new Error("Console address and chain ID are required");
+      if (!accountAddress || !chainId) {
+        throw new Error("Brahma Account address and chain ID are required");
       }
 
       const response = await axiosInstance.get(
-        `${routes.fetchAutomationSubscriptions}/${consoleAddress}/${chainId}`
+        `${routes.fetchAutomationSubscriptions}/${accountAddress}/${chainId}`
       );
 
       if (!response.data.data) {
         throw new Error(
-          "No subscriptions found for the given console address and chain ID"
+          "No subscriptions found for the given account address and chain ID"
         );
       }
 

@@ -45,7 +45,7 @@ export class PublicDeployer {
   /**
    * Generates an automation sub-account for a given set of parameters.
    * @param {Address} owner - The address of the owner.
-   * @param {Address} precomputedConsoleAddress - The precomputed console address (from /pre-compute response)
+   * @param {Address} precomputedConsoleAddress - The precomputed account address (from /pre-compute response)
    * @param {number} chainID - Chain ID for connected network.
    * @param {string} registryID - The registry ID. (Hardcoded)
    * @param {Address} feeToken - The address of the fee token. (from /pre-compute response)
@@ -90,7 +90,7 @@ export class PublicDeployer {
   }
 
   /**
-   * Deploys a console and sub-account with the given parameters.
+   * Deploys a account and sub-account with the given parameters.
    * @param {Address} owner - The address of the owner.
    * @param {number} chainID - The ID of the blockchain network.
    * @param {string} registryID - The registry ID. (Hardcoded)
@@ -141,7 +141,7 @@ export class PublicDeployer {
       );
       return response.data.data;
     } catch (err) {
-      console.error("Error deploying console and sub-account:", err);
+      console.error("Error deploying account and sub-account:", err);
       return null;
     }
   }

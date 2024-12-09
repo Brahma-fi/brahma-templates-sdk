@@ -27,7 +27,7 @@ const DeploymentStatus = () => {
 
       {deploymentStatus.status === "successful" && (
         <FlexContainer gap={0.4} alignItems="center">
-          <Typography type="BODY_MEDIUM_S">Console Address:</Typography>
+          <Typography type="BODY_MEDIUM_S">Brahma Account Address:</Typography>
           <InfoLinkTag
             content={truncateString(preComputedConsoleAddress)}
             link={`https://dev.console.brahma.fi/account/${preComputedConsoleAddress}`}

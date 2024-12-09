@@ -50,7 +50,7 @@ type BalanceOf = {
 
 export type UserClientFactory = {
   eoa: Address;
-  consoleAddress: Address;
+  accountAddress: Address;
   chainId: number;
   assets: TAsset[];
 };

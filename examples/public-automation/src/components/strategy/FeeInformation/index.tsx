@@ -95,7 +95,7 @@ const FeeInformation: React.FC<FeeInformationProps> = ({
 
           <FlexContainer gap={1} alignItems="center">
             <Typography type="BODY_MEDIUM_S">
-              Pre-computed Console Address:
+              Pre-computed Account Address:
             </Typography>
             <Typography type="BODY_MEDIUM_S">
               {preComputedConsoleAddress}
@@ -104,7 +104,7 @@ const FeeInformation: React.FC<FeeInformationProps> = ({
 
           <FlexContainer gap={1} alignItems="center">
             <Typography type="BODY_MEDIUM_S">
-              Pre-computed Console Address Fee Estimate:
+              Pre-computed Account Address Fee Estimate:
             </Typography>
 
             <Typography type="BODY_MEDIUM_S">

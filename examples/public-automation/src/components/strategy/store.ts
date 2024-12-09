@@ -120,10 +120,10 @@ const useStore = create<Store>((set, get) => ({
 
     if (!preComputedConsoleAddress) {
       dispatchToast({
-        id: "fetch-precomputed-console-address-error",
-        title: "Error fetching precomputed console address",
+        id: "fetch-precomputed-account-address-error",
+        title: "Error fetching precomputed account address",
         description: {
-          value: "Precomputed console address not found",
+          value: "Precomputed account address not found",
         },
         type: "error",
       });
@@ -208,8 +208,8 @@ const useStore = create<Store>((set, get) => ({
 
       if (!deployData) {
         dispatchToast({
-          id: "deploy-console-error",
-          title: "Error deploying console and sub-account",
+          id: "deploy-account-error",
+          title: "Error deploying account and sub-account",
           description: {
             value: "An error occurred during deployment",
           },
@@ -302,7 +302,7 @@ const useStore = create<Store>((set, get) => ({
             title: "Deployment Status",
             description: {
               value:
-                "Your console and sub-account have been deployed successfully",
+                "Your account and sub-account have been deployed successfully",
             },
             type: "success",
           });
@@ -355,10 +355,10 @@ const useStore = create<Store>((set, get) => ({
 
     if (!preComputedConsoleAddress) {
       dispatchToast({
-        id: "fetch-precomputed-console-balances-error",
-        title: "Error fetching precomputed console balances",
+        id: "fetch-precomputed-account-balances-error",
+        title: "Error fetching precomputed account balances",
         description: {
-          value: "Precomputed console address not found",
+          value: "Precomputed account address not found",
         },
         type: "error",
       });
@@ -369,7 +369,7 @@ const useStore = create<Store>((set, get) => ({
 
     const balances = await fetchAssetsBalanceMultiCall({
       assets: assets,
-      consoleAddress: preComputedConsoleAddress,
+      accountAddress: preComputedConsoleAddress,
     });
 
     const scamTokenAddresses = ["0x33567e90505edde4c6331e12e01860301115ba84"];
@@ -404,7 +404,7 @@ const useStore = create<Store>((set, get) => ({
 
       const balances = await fetchAssetsBalanceMultiCall({
         assets: assets,
-        consoleAddress: eoa,
+        accountAddress: eoa,
       });
 
       const scamTokenAddresses = ["0x33567e90505edde4c6331e12e01860301115ba84"];
