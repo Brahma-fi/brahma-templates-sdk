@@ -1349,10 +1349,10 @@ braces@^3.0.3, braces@~3.0.2:
   dependencies:
     fill-range "^7.1.1"
 
-brahma-templates-sdk@^1.0.67:
-  version "1.0.67"
-  resolved "https://registry.yarnpkg.com/brahma-templates-sdk/-/brahma-templates-sdk-1.0.67.tgz#a0d58ed5f95aea72f07f3afed9d28331c2464224"
-  integrity sha512-U/nTsxOHuIwNQm8dG1Zd+eN5bDg4iUGF8VdU0bJQhcesppxJV6ptVxrAmDjjVwHcX3DWqGAzvyuSGjC1eqBLFg==
+brahma-templates-sdk@^1.0.68:
+  version "1.0.68"
+  resolved "https://registry.yarnpkg.com/brahma-templates-sdk/-/brahma-templates-sdk-1.0.68.tgz#7ee14cb8b0a9ce8dbefff96799ecf73a5b840594"
+  integrity sha512-91tLN1HUPjqeHqtpeEPQfZu482cMIqg6zrMCVM9xclNFLUlZB/JaBqjMcO5XRPOT3ivde8+TlMgzu0FWUYU4pg==
   dependencies:
     "@rollup/plugin-typescript" "^11.1.6"
     axios "^1.7.9"
