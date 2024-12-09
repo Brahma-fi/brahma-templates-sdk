@@ -3,7 +3,7 @@ import { Address, encodeFunctionData, erc20Abi, zeroAddress } from "viem";
 import { TAsset, TemplatesSDK, Transaction } from "brahma-templates-sdk";
 
 import AssetsTable from "./AssetsTable";
-import usePolling from "./usePolling";
+// import usePolling from "./usePolling";
 
 const automationName = "Drain Account";
 
@@ -20,8 +20,8 @@ export const DrainAccount = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const handleSelectAllAssets = () => {
-    setSelectedAssets(assets);
+  const handleAllAssets = (selectAll: boolean = true) => {
+    setSelectedAssets(selectAll ? assets : []);
   };
 
   const handleAssetSelect = (asset: TAsset) => {
@@ -118,25 +118,21 @@ export const DrainAccount = () => {
         },
         automationName
       );
+
+      fetchAssets();
     } catch (error) {
       console.error("An error occurred while generating calldata:", error);
       alert("An error occurred. Please try again.");
     }
   };
 
-  usePolling(async () => {
-    await fetchAssets();
-  }, 10000);
+  // usePolling(async () => {
+  //   await fetchAssets();
+  // }, 10000);
 
   useEffect(() => {
     fetchAssets();
   }, []);
-
-  useEffect(() => {
-    if (assets.length > 0) {
-      setSelectedAssets(assets);
-    }
-  }, [assets]);
 
   if (loading) {
     return <p style={{ fontSize: "14px", color: "#333" }}>Loading assets...</p>;
@@ -166,7 +162,7 @@ export const DrainAccount = () => {
         assets={assets}
         selectedAssets={selectedAssets}
         handleAssetSelect={handleAssetSelect}
-        handleSelectAllAssets={handleSelectAllAssets}
+        handleAllAssets={handleAllAssets}
       />
       <div style={{ marginTop: "1rem", display: "flex", alignItems: "center" }}>
         <span style={{ fontSize: "14px", marginRight: "0.5rem" }}>

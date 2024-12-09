@@ -23,12 +23,12 @@ const AssetsTable = ({
   assets,
   selectedAssets,
   handleAssetSelect,
-  handleSelectAllAssets,
+  handleAllAssets,
 }: {
   assets: TAsset[];
   selectedAssets: TAsset[];
   handleAssetSelect: (token: TAsset) => void;
-  handleSelectAllAssets: () => void;
+  handleAllAssets: (selectAll: boolean) => void;
 }) => {
   const areAllSelected = assets.every((asset) =>
     selectedAssets.some(
@@ -56,7 +56,7 @@ const AssetsTable = ({
             <input
               type="checkbox"
               checked={areAllSelected}
-              onChange={handleSelectAllAssets}
+              onChange={() => handleAllAssets(areAllSelected ? false : true)}
             />
           </StyledTh>
         </tr>
