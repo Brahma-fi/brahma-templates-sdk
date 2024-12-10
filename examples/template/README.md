@@ -2,6 +2,8 @@
 
 This project utilizes the `brahma-templates-sdk` to and interact with the Brahma account. Below are the steps to install and use the SDK.
 
+Checkout the Deployed App here - https://drain-account.vercel.app
+
 ## Installation
 
 To install the SDK, use npm or yarn:
