@@ -4,7 +4,6 @@ import { TAsset, TemplatesSDK, Transaction } from "brahma-templates-sdk";
 
 import AssetsTable from "./AssetsTable";
 import usePolling from "./usePolling";
-// import usePolling from "./usePolling";
 
 const automationName = "Drain Account";
 
@@ -65,7 +64,6 @@ export const DrainAccount = () => {
     } catch (error) {
       setShowIframePrompt(true);
       console.log("error", error);
-      console.error("An error occurred while fetching assets:", error);
     } finally {
       setLoading(false);
     }
