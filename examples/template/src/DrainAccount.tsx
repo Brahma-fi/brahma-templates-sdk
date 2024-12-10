@@ -3,6 +3,7 @@ import { Address, encodeFunctionData, erc20Abi, zeroAddress } from "viem";
 import { TAsset, TemplatesSDK, Transaction } from "brahma-templates-sdk";
 
 import AssetsTable from "./AssetsTable";
+import usePolling from "./usePolling";
 // import usePolling from "./usePolling";
 
 const automationName = "Drain Account";
@@ -126,9 +127,10 @@ export const DrainAccount = () => {
     }
   };
 
-  // usePolling(async () => {
-  //   await fetchAssets();
-  // }, 10000);
+  usePolling(async () => {
+    if (assets.length > 0) return;
+    await fetchAssets();
+  }, 10000);
 
   useEffect(() => {
     fetchAssets();
