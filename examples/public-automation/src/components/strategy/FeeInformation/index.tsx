@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
-import { Address } from "viem";
+import { Address, zeroAddress } from "viem";
 
 import useStore from "../store";
 import { Token } from "../types";
 import { SupportedChainIds, TAsset } from "@/types";
 import usePolling from "@/hooks/usePolling";
 import { formatUnits, parseUnits, sliceDecimalString } from "@/utils";
+
 import {
   FlexContainer,
   HrLine,
@@ -54,8 +55,8 @@ const FeeInformation: React.FC<FeeInformationProps> = ({
     !!preComputedConsoleAddress;
 
   useEffect(() => {
-    if (!eoa || !feeToken?.asset?.address) return;
-    fetchPreComputedConsoleAddress(eoa, chainId, feeToken.asset.address);
+    if (!eoa ) return;
+    fetchPreComputedConsoleAddress(eoa, chainId, zeroAddress);
   }, [chainId, eoa, feeToken?.asset?.address, fetchPreComputedConsoleAddress]);
 
   usePolling(() => {

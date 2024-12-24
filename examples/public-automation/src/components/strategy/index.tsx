@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Address, erc20Abi, zeroAddress } from "viem";
+import { Address, erc20Abi, http, zeroAddress,createPublicClient } from "viem";
 import { useWalletClient } from "wagmi";
-
+import { wagmiConfig } from "@/wagmi";
+import { sendTransaction, getBalance,waitForTransactionReceipt } from "@wagmi/core";
 import useStore from "./store";
 import { Token } from "./types";
 import Header from "./Header";
@@ -27,11 +28,13 @@ import {
 import { defaultTheme } from "@/lib";
 import { AddIcon, CropFreeIcon, RefreshIcon, TickIcon } from "@/icons";
 import assetsList from "@/arb.json";
+import { TemplatesSDK } from "brahma-templates-sdk-beta";
 
 type StrategyPageProps = {
   eoa: Address;
   chainId: SupportedChainIds;
 };
+
 
 function StrategyPage({ eoa, chainId }: StrategyPageProps) {
   const { data: signer } = useWalletClient();
@@ -45,6 +48,8 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
     fetchEoaAssets,
     fetchDeploymentStatus,
     generateAndDeploySubAccount,
+    fetchPreComputedConsoleAddress,
+    generateAndApproveSubAccount
   } = useStore();
 
   const assets: TAsset[] = useMemo(() => {
@@ -115,130 +120,106 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
     return reducedAmount < 0;
   }, [fundsDeposited, feeEstimate, feeToken]);
 
-  async function handleDepositFunds() {
-    if (
-      !signer ||
-      !eoa ||
-      !preComputedConsoleAddress ||
-      selectedTokens.length === 0
-    ) {
-      console.error("Missing required information for deposit");
-      return;
-    }
-
-    setFundsDepositedLoading(true);
-    try {
-      for (const token of selectedTokens) {
-        if (token.asset?.address === zeroAddress) {
-          // Handle ETH transfer
-          await signer.sendTransaction({
-            to: preComputedConsoleAddress as Address,
-            value: parseUnits(token.amount, token.asset?.decimals),
-          });
-        } else {
-          // Handle ERC20 transfer
-          await signer.writeContract({
-            abi: erc20Abi,
-            address: token?.asset?.address as Address,
-            functionName: "transfer",
-            args: [
-              preComputedConsoleAddress as Address,
-              parseUnits(token.amount, token.asset?.decimals),
-            ],
-          });
-        }
-      }
-      setFundsDeposited(true); // Moved here to ensure all deposits succeed
+  async function precomputeAndSet() {
+    setFundsDepositedLoading(false);
+    const feeTokenAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+    if (!signer) {
       dispatchToast({
-        id: "funds-deposited",
-        title: "Funds Deposited",
-        type: "success",
-        description: {
-          value: "Funds have been deposited to the pre-computed account",
-        },
-      });
-    } catch (err: any) {
-      console.log({ err });
-      setFundsDeposited(false);
-      dispatchToast({
-        id: "funds-error",
-        title:
-          formatRejectMetamaskErrorMessage(err) || "Error depositing funds",
+        id: "signer-error",
+        title: "Error",
         type: "error",
         description: {
-          value: "An error occurred while depositing funds",
+          value: "Wallet not connected",
+        },
+      });
+      return;
+    }
+    try {
+      setFundsDepositedLoading(true);
+      
+      // Call the precompute function from the store
+      await fetchPreComputedConsoleAddress(eoa, chainId,feeTokenAddress);
+      const balance = await getBalance(wagmiConfig, {
+        address: preComputedConsoleAddress as Address,
+        blockTag: 'latest', 
+        chainId,
+        unit:'wei'
+      });
+    
+      if (balance.value < BigInt(feeEstimate || 0)) {
+        const tx = await sendTransaction(wagmiConfig,{
+          to: preComputedConsoleAddress,
+          value: BigInt(feeEstimate || 0),
+        });
+        
+      console.log(tx,"executed deposit")
+     
+      dispatchToast({
+        id: "deposit-check",
+        title: "deposit amount in console",
+        description: {
+          value: "amount deposited successfully ",
+        },
+        type: "success",
+      });
+      }else{
+        dispatchToast({
+          id: "deposit-check",
+          title: "deposit amount in console",
+          description: {
+            value: "amount deposited successfully ",
+          },
+          type: "success",
+        });
+      }
+  
+      setFundsDeposited(true);
+    } catch (error) {
+      console.error("Error fetching precomputed address:", error);
+      dispatchToast({
+        id: "precompute-error",
+        title: "Error",
+        type: "error",
+        description: {
+          value: "Failed to fetch precomputed console address",
         },
       });
     } finally {
       setFundsDepositedLoading(false);
     }
   }
+  async function handleDepositFunds() {
+  
+    const feeTokenAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
+
+    try {
+      await generateAndApproveSubAccount(
+        eoa,
+        chainId,
+        feeTokenAddress,
+        feeEstimate as any,
+        [],
+        []
+      );
+    } catch (err: any) {
+      console.error("Error deploying Brahma Account:", err);
+      dispatchToast({
+        id: "deploy-error",
+        title: "Error deploying Account",
+        type: "error",
+        description: {
+          value: "An error occurred during Brahma Account deployment",
+        },
+      });
+    } finally {
+    }
+  }
 
   async function handleDeployConsole() {
-    if (
-      !feeToken?.asset?.address ||
-      !preComputedConsoleAddress ||
-      !selectedTokens.length ||
-      !feeEstimate
-    ) {
-      dispatchToast({
-        id: "console-deploy-error",
-        title: "Error deploying console",
-        type: "error",
-        description: {
-          value: "Missing required information for account deployment",
-        },
-      });
-      return;
-    }
-
-    // Check if the account assets have a balance greater than the feeEstimate for the fee token
-    const feeTokenAddress = feeToken.asset.address.toLowerCase() as Address;
-    const feeTokenBalance =
-      accountAssets.data.find(
-        (token) => token?.address.toLowerCase() === feeTokenAddress
-      )?.balanceOf?.value || BigInt(0);
-
-    if (feeTokenBalance < BigInt(feeEstimate)) {
-      dispatchToast({
-        id: "console-deploy-error",
-        title: "Error deploying console",
-        type: "error",
-        description: {
-          value: "Insufficient balance for the fee token",
-        },
-      });
-      return;
-    }
-
-    if (
-      !fundsDeposited &&
-      accountAssets.data.some((token) => {
-        const tokenAmount = token?.balanceOf?.value || BigInt(0);
-        return tokenAmount <= 0;
-      })
-    ) {
-      dispatchToast({
-        id: "console-deploy-error",
-        title: "Error deploying account",
-        type: "error",
-        description: {
-          value: "Token amount cannot be zero",
-        },
-      });
-      return;
-    }
-
-    const tokens = accountAssets.data.map((asset) => asset?.address as Address);
-    const amounts = accountAssets.data.map((token) => {
-      const tokenAmount = token.balanceOf?.value || BigInt(0);
-      // Reduce the amount by feeEstimate if the token address matches feeTokenAddress
-      const adjustedAmount =
-        token?.address.toLowerCase() === feeTokenAddress
-          ? tokenAmount - BigInt(feeEstimate)
-          : tokenAmount;
-      return adjustedAmount.toString();
-    });
+   
+    const feeTokenAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+    
 
     setConsoleDeployedLoading(true);
     try {
@@ -246,9 +227,9 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         eoa,
         chainId,
         feeTokenAddress,
-        feeEstimate,
-        tokens,
-        amounts
+        feeEstimate || "0",
+        [],
+        []
       );
     } catch (err: any) {
       console.error("Error deploying Brahma Account:", err);
@@ -264,17 +245,6 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
       setConsoleDeployedLoading(false);
     }
   }
-
-  const isDepositButtonDisabled =
-    fundsDeposited ||
-    !feeEstimate ||
-    !feeToken?.asset ||
-    selectedTokens.some((token) => {
-      const tokenAmount = parseUnits(token.amount, token?.asset?.decimals);
-      return tokenAmount <= 0;
-    });
-
-  const isDeployButtonDisabled = !fundsDeposited || consoleDeployedLoading;
 
   function handleRefresh() {
     setSelectedTokens([]);
@@ -425,61 +395,35 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
             flexDirection="column"
             gap={1}
           >
-            <GrayBoundaryBlackWrapper padding="0.2rem">
-              <ContentWrapper>
+             <FlexContainer width={100} gap={1.6}>
+              <FlexContainer
+                borderColor={defaultTheme.colors.gray700}
+                borderRadius={0.8}
+                padding="1.4rem"
+              >
+                {fundsDeposited ? (
+                  <TickIcon
+                    color={defaultTheme.colors.success}
+                    width={16}
+                    height={16}
+                  />
+                ) : (
+                  <CropFreeIcon />
+                )}
+              </FlexContainer>
+              <Button
+                onClick={precomputeAndSet}
+                buttonSize="L"
+                buttonType="primary"
+                disabled={ fundsDepositedLoading}
+              >
                 <Typography type="BODY_MEDIUM_S">
-                  Strategy will automatically create a Brahma Account
+                  {fundsDepositedLoading
+                    ? "Checking Operator Status ..."
+                    : "Precompute"}
                 </Typography>
-              </ContentWrapper>
-              <ContentWrapper>
-                <FlexContainer
-                  width={100}
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography type="BODY_MEDIUM_S">Deposit</Typography>
-                </FlexContainer>
-                <SwapInput
-                  showInputPresets={true}
-                  disabled={!eoa}
-                  inputValue={tokenIn.amount}
-                  setInputValue={(value) => updateTokenInValue(value)}
-                  selectedAsset={tokenIn.asset}
-                  setSelectedAsset={selectTokenInHandler}
-                  getMaxTokenBalanceAvailable={getMaxTokenBalanceAvailable}
-                  availableAssets={filteredEoaAssetsForCurrentChain}
-                />
-              </ContentWrapper>
-              <ContentWrapper>
-                <Button
-                  onClick={() => {
-                    if (!tokenIn.asset || !tokenIn.amount) {
-                      dispatchToast({
-                        id: "deposit-asset-missing",
-                        title: "Deposit token cannot be empty",
-                        description: {
-                          value: "Please select an asset and amount",
-                        },
-                        type: "error",
-                      });
-                      return;
-                    }
-                    addToSelectedTokens(tokenIn);
-                    setTokenIn({
-                      amount: "",
-                      asset: null,
-                    });
-                  }}
-                  buttonSize="L"
-                >
-                  <AddIcon color={defaultTheme.colors.white} />
-                  <Typography type="BODY_MEDIUM_S">Add Token</Typography>
-                </Button>
-              </ContentWrapper>
-            </GrayBoundaryBlackWrapper>
-            <Typography type="BODY_MEDIUM_S">
-              2-step process. Make sure to complete both actions.
-            </Typography>
+              </Button>
+            </FlexContainer>
             <FlexContainer width={100} gap={1.6}>
               <FlexContainer
                 borderColor={defaultTheme.colors.gray700}
@@ -500,10 +444,12 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
                 onClick={handleDepositFunds}
                 buttonSize="L"
                 buttonType="primary"
-                disabled={isDepositButtonDisabled || fundsDepositedLoading}
+                disabled={ fundsDepositedLoading}
               >
                 <Typography type="BODY_MEDIUM_S">
-                  {fundsDepositedLoading ? "Depositing ..." : "Deposit Funds"}
+                  {fundsDepositedLoading
+                    ? "Checking Operator Status ..."
+                    : "Toggle Operator"}
                 </Typography>
               </Button>
             </FlexContainer>
@@ -519,7 +465,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
                 onClick={handleDeployConsole}
                 buttonSize="L"
                 buttonType="primary"
-                disabled={isDeployButtonDisabled || consoleDeployedLoading}
+                disabled={ consoleDeployedLoading}
               >
                 <Typography type="BODY_MEDIUM_S">
                   {consoleDeployedLoading
