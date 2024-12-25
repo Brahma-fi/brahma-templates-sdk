@@ -49,7 +49,6 @@ const FeeInformation: React.FC<FeeInformationProps> = ({
   ]);
 
   const hasFeeEstimateAndConsoleAddress =
-    selectedTokens.length > 0 &&
     !!feeToken?.asset &&
     !!feeEstimate &&
     !!preComputedConsoleAddress;

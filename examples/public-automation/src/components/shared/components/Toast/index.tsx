@@ -9,22 +9,28 @@ import Typography, { TTypographyType } from "../Typography";
 import * as S from "./styles";
 import Spinner from "../Spinner";
 
-const TOAST_TYPE_MAPPING: Record<
-  ToastType,
-  { color: string; icon: React.ReactNode }
-> = {
-  default: { color: defaultTheme.colors.gray400, icon: <TooltipIcon /> },
-  success: { color: defaultTheme.colors.success, icon: <DoneIcon /> },
+export const TOAST_TYPE_MAPPING = {
+  success: {
+    color: "#4CAF50",
+    icon: "success"
+  },
   error: {
-    color: defaultTheme.colors.error,
-    icon: <TooltipIcon cursor="default" />,
+    color: "#FF4D4F",
+    icon: "error"
   },
-  warning: { color: defaultTheme.colors.warning, icon: <TooltipIcon /> },
+  warning: {
+    color: "#FAAD14",
+    icon: "warning"
+  },
+  info: {
+    color: "#1322AC",
+    icon: "info"
+  },
   loading: {
-    color: defaultTheme.colors.gray700,
-    icon: <Spinner />,
-  },
-};
+    color: "#1322AC",
+    icon: "loading"
+  }
+} as const;
 
 type ToastType = "default" | "success" | "warning" | "error" | "loading";
 

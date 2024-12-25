@@ -9,17 +9,10 @@ export const wagmiConfig = getDefaultConfig({
   chains: SUPPORTED_CHAINS,
   ssr: true,
   transports: {
-    [ARBITRUM_CHAIN_ID]: fallback([
+    [1923]: fallback([
       http(
-        "https://arb-mainnet.g.alchemy.com/v2/q2VDjsGh2h0P6WZSXUq2eTw7y0_Ffkdq"
-      ),
-      ...arbitrum.rpcUrls.default.http.map((rpcUrl) => http(rpcUrl)),
+        "https://swell-mainnet.alt.technology"
+      )
     ]),
-    // [BASE_MAINNET_CHAIN_ID]: fallback([
-    //   http(
-    //     "https://base-mainnet.g.alchemy.com/v2/q2VDjsGh2h0P6WZSXUq2eTw7y0_Ffkdq"
-    //   ),
-    //   ...base.rpcUrls.default.http.map((rpcUrl) => http(rpcUrl)),
-    // ]),
   },
 });
