@@ -3,7 +3,11 @@ import { toast } from "react-toastify";
 import { Address, formatUnits } from "viem";
 import { useWalletClient } from "wagmi";
 import { wagmiConfig } from "@/wagmi";
-import { sendTransaction, getBalance, waitForTransactionReceipt } from "@wagmi/core";
+import {
+  sendTransaction,
+  getBalance,
+  waitForTransactionReceipt,
+} from "@wagmi/core";
 import useStore from "./store";
 import { SupportedChainIds } from "@/types";
 import { formatRejectMetamaskErrorMessage } from "@/utils";
@@ -15,6 +19,7 @@ import {
   Typography,
 } from "../shared/components";
 import { CheckCircle, LayoutDashboard } from "lucide-react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 type StrategyPageProps = {
   eoa: Address;
@@ -59,8 +64,10 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         [],
         []
       );
-      
 
+      if (result?.txHash) {
+        setTxHash(result.txHash);
+      }
     } catch (err: any) {
       console.error("Automation activation error:", err);
       dispatchToast({
@@ -68,7 +75,9 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         title: "Activation Failed",
         type: "error",
         description: {
-          value: formatRejectMetamaskErrorMessage(err) || "Failed to activate automation",
+          value:
+            formatRejectMetamaskErrorMessage(err) ||
+            "Failed to activate automation",
         },
       });
     } finally {
@@ -85,6 +94,12 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
   useEffect(() => {
     const checkBalance = async () => {
       if (!preComputedConsoleAddress || !feeEstimate) return;
+
+      // If feeEstimate is 0, mark as deposited and return
+      if (feeEstimate === "0") {
+        setFundsDeposited(true);
+        return;
+      }
 
       try {
         const balance = await getBalance(wagmiConfig, {
@@ -112,12 +127,14 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
           dispatchToast({
             id: "deposit-pending",
             title: "Setup in Progress",
-            description: { value: "Step 1/2: Initializing automation setup..." },
+            description: {
+              value: "Step 1/2: Initializing automation setup...",
+            },
             type: "loading",
           });
 
           await waitForTransactionReceipt(wagmiConfig, { hash: tx });
-          
+
           dispatchToast({
             id: "deposit-success",
             title: "Setup Fee Confirmed",
@@ -134,8 +151,10 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         dispatchToast({
           id: "setup-error",
           title: "Setup Failed",
-          description: { 
-            value: formatRejectMetamaskErrorMessage(error) || "Failed to setup automation"
+          description: {
+            value:
+              formatRejectMetamaskErrorMessage(error) ||
+              "Failed to setup automation",
           },
           type: "error",
         });
@@ -147,21 +166,22 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
 
   usePolling(() => {
     if (!deploymentStatus?.taskId) return;
-    if (["successful", "failed", "cancelled"].includes(deploymentStatus.status)) {
+    if (
+      ["successful", "failed", "cancelled"].includes(deploymentStatus.status)
+    ) {
       if (deploymentStatus.status === "successful") {
         setIsAutomationActive(true);
-        
-        
+        if (deploymentStatus.txHash) {
+          setTxHash(deploymentStatus.txHash);
           dispatchToast({
             id: "automation-active",
             title: "Automation Active",
-            description: { 
-              value: "Your wSwell rewards will now be claimed automatically" 
+            description: {
+              value: "Your wSwell rewards will now be claimed automatically",
             },
             type: "success",
           });
-          
-        
+        }
       }
       return;
     }
@@ -170,14 +190,18 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
 
   return (
     <FlexContainer flexDirection="column" width={100}>
-      {/* Header */}
-      <FlexContainer 
-        justifyContent="center" 
-        alignItems="center" 
+      {/* Header with Wallet Button */}
+      <FlexContainer
+        justifyContent="space-between"
+        alignItems="center"
         padding="2rem"
         style={{
-          background: "linear-gradient(180deg, rgba(19,34,172,0.1) 0%, rgba(19,34,172,0) 100%)",
-          borderBottom: "1px solid rgba(255,255,255,0.1)"
+          background:
+            "linear-gradient(180deg, rgba(19,34,172,0.1) 0%, rgba(19,34,172,0) 100%)",
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          maxWidth: "1200px",
+          margin: "0 auto",
+          width: "100%",
         }}
       >
         <img
@@ -186,21 +210,25 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
           width={48}
           height={48}
         />
+        <ConnectButton />
       </FlexContainer>
 
       {/* Main Content */}
-      <FlexContainer 
-        style={{ 
-          maxWidth: "800px", 
-          margin: "0 auto", 
+      <FlexContainer
+        style={{
+          maxWidth: "800px",
+          margin: "0 auto",
           padding: "3rem 2rem",
-          gap: "2rem"
+          gap: "2rem",
         }}
         flexDirection="column"
       >
         {/* Title Section */}
         <FlexContainer flexDirection="column" gap={1}>
-          <Typography type="TITLE_XL" style={{ color: "#FFFFFF", marginBottom: "0.5rem" }}>
+          <Typography
+            type="TITLE_XL"
+            style={{ color: "#FFFFFF", marginBottom: "0.5rem" }}
+          >
             wSwell Auto-Claim Setup
           </Typography>
           <Typography type="BODY_MEDIUM_S" style={{ color: "#999999" }}>
@@ -211,80 +239,92 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         {/* Status Cards */}
         <FlexContainer flexDirection="column" gap={2}>
           {/* Connected Wallet */}
-          <FlexContainer 
-            flexDirection="column" 
+          <FlexContainer
+            flexDirection="column"
             padding="1.5rem"
-            style={{ 
+            style={{
               background: "rgba(19,34,172,0.1)",
               borderRadius: "16px",
-              border: "1px solid rgba(19,34,172,0.2)"
+              border: "1px solid rgba(19,34,172,0.2)",
             }}
           >
-            <FlexContainer alignItems="center" gap={1} style={{ marginBottom: "0.75rem" }}>
-              <div style={{ 
-                width: "8px", 
-                height: "8px", 
-                borderRadius: "50%", 
-                backgroundColor: "#1322AC" 
-              }} />
+            <FlexContainer
+              alignItems="center"
+              gap={1}
+              style={{ marginBottom: "0.75rem" }}
+            >
+              <div
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: "#1322AC",
+                }}
+              />
               <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
                 Connected Wallet
               </Typography>
             </FlexContainer>
-            <Typography type="BODY_MEDIUM_S" style={{ color: "#999999", wordBreak: "break-all" }}>
+            <Typography
+              type="BODY_MEDIUM_S"
+              style={{ color: "#999999", wordBreak: "break-all" }}
+            >
               {eoa}
             </Typography>
           </FlexContainer>
 
           {/* Automation Console */}
-          <FlexContainer 
-            flexDirection="column" 
+          <FlexContainer
+            flexDirection="column"
             padding="1.5rem"
-            style={{ 
-              background: isAutomationActive ? "rgba(19,34,172,0.1)" : "rgba(32,34,38,0.5)",
+            style={{
+              background: isAutomationActive
+                ? "rgba(19,34,172,0.1)"
+                : "rgba(32,34,38,0.5)",
               borderRadius: "16px",
-              border: isAutomationActive ? "1px solid rgba(19,34,172,0.2)" : "1px solid rgba(255,255,255,0.1)"
+              border: isAutomationActive
+                ? "1px solid rgba(19,34,172,0.2)"
+                : "1px solid rgba(255,255,255,0.1)",
             }}
           >
-            <FlexContainer alignItems="center" gap={1} style={{ marginBottom: "0.75rem" }}>
+            <FlexContainer
+              alignItems="center"
+              gap={1}
+              style={{ marginBottom: "0.75rem" }}
+            >
               {isAutomationActive ? (
                 <CheckCircle size={16} color="#1322AC" />
               ) : (
                 <LayoutDashboard size={16} color="#999999" />
               )}
               <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
-                {isAutomationActive ? "Automation Active" : "Automation Console"}
+                {isAutomationActive
+                  ? "Automation Active"
+                  : "Automation Console"}
               </Typography>
             </FlexContainer>
             {preComputedConsoleAddress && (
-              <Typography type="BODY_MEDIUM_S" style={{ color: "#999999", wordBreak: "break-all" }}>
+              <Typography
+                type="BODY_MEDIUM_S"
+                style={{ color: "#999999", wordBreak: "break-all" }}
+              >
                 {preComputedConsoleAddress}
               </Typography>
             )}
             {txHash && (
-              <Typography type="BODY_MEDIUM_S" style={{ color: "#999999", marginTop: "0.5rem", wordBreak: "break-all" }}>
+              <Typography
+                type="BODY_MEDIUM_S"
+                style={{
+                  color: "#999999",
+                  marginTop: "0.5rem",
+                  wordBreak: "break-all",
+                }}
+              >
                 Transaction: {txHash}
               </Typography>
             )}
           </FlexContainer>
 
-          {/* Fee Info */}
-          <FlexContainer 
-            flexDirection="column" 
-            padding="1.5rem"
-            style={{ 
-              background: "rgba(32,34,38,0.5)",
-              borderRadius: "16px",
-              border: "1px solid rgba(255,255,255,0.1)"
-            }}
-          >
-            <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF", marginBottom: "0.5rem" }}>
-              One-Time Setup Fee
-            </Typography>
-            <Typography type="BODY_MEDIUM_S" style={{ color: "#999999" }}>
-              {feeEstimate ? `${formatUnits(BigInt(feeEstimate), 18)} ETH` : "Calculating..."}
-            </Typography>
-          </FlexContainer>
         </FlexContainer>
 
         {/* Action Button */}
@@ -294,12 +334,12 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
             buttonSize="L"
             buttonType="primary"
             disabled={isActivating || !fundsDeposited}
-            style={{ 
+            style={{
               width: "100%",
               height: "56px",
               background: "#1322AC",
               borderRadius: "12px",
-              marginTop: "1rem"
+              marginTop: "1rem",
             }}
           >
             <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
@@ -309,12 +349,13 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         )}
 
         {/* Help Text */}
-        <Typography type="BODY_MEDIUM_S" style={{ color: "#999999", textAlign: "center", marginTop: "1rem" }}>
-          {isAutomationActive ? (
-            "Your wSwell rewards will now be claimed automatically"
-          ) : (
-            "Activating automation requires two steps: enabling permissions and deploying your automation console"
-          )}
+        <Typography
+          type="BODY_MEDIUM_S"
+          style={{ color: "#999999", textAlign: "center", marginTop: "1rem" }}
+        >
+          {isAutomationActive
+            ? "Your wSwell rewards will now be claimed automatically"
+            : "Activating automation requires two steps: enabling permissions and deploying your automation console"}
         </Typography>
       </FlexContainer>
     </FlexContainer>
