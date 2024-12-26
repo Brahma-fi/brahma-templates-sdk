@@ -22,8 +22,8 @@ import { CheckCircle, LayoutDashboard } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 type StrategyPageProps = {
-  eoa: Address;
-  chainId: SupportedChainIds;
+  eoa?: Address;
+  chainId?: SupportedChainIds;
 };
 
 function StrategyPage({ eoa, chainId }: StrategyPageProps) {
@@ -42,6 +42,44 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
   const [isAutomationActive, setIsAutomationActive] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
 
+  const checkAutomationStatus = async (address: string) => {
+    try {
+      const cleanAddress = address.toLowerCase().replace('0x', '');
+      const response = await fetch(`https://mammoth-angil-swell-test-d7d7595e.koyeb.app/source_1?topics=like(any).{*${cleanAddress}*}`);
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        setIsAutomationActive(true);
+        setTxHash(data[0].transaction_hash);
+        dispatchToast({
+          id: "automation-active",
+          title: "Automation Active",
+          description: {
+            value: "Your wSwell rewards will be claimed automatically",
+          },
+          type: "success",
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking automation status:', error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (!eoa) return;
+    checkAutomationStatus(eoa);
+  }, [eoa]);
+
+  usePolling(() => {
+    if (!eoa || isAutomationActive) return;
+    if (deploymentStatus?.status === "successful") {
+      checkAutomationStatus(eoa);
+    }
+  }, 10000);
+
   async function handleActivateAutomation() {
     const feeTokenAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
@@ -57,8 +95,8 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
       });
 
       const result = await generateAndApproveSubAccount(
-        eoa,
-        chainId,
+        eoa as Address,
+        chainId as SupportedChainIds,
         feeTokenAddress,
         feeEstimate as any,
         [],
@@ -88,14 +126,13 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
   useEffect(() => {
     const feeTokenAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
     if (!signer) return;
-    fetchPreComputedConsoleAddress(eoa, chainId, feeTokenAddress);
+    fetchPreComputedConsoleAddress(eoa as Address, chainId as SupportedChainIds, feeTokenAddress);
   }, [signer, eoa, chainId]);
 
   useEffect(() => {
     const checkBalance = async () => {
       if (!preComputedConsoleAddress || !feeEstimate) return;
 
-      // If feeEstimate is 0, mark as deposited and return
       if (feeEstimate === "0") {
         setFundsDeposited(true);
         return;
@@ -105,7 +142,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         const balance = await getBalance(wagmiConfig, {
           address: preComputedConsoleAddress as Address,
           blockTag: "latest",
-          chainId,
+          chainId: chainId as SupportedChainIds,
           unit: "wei",
         });
 
@@ -162,7 +199,7 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
     };
 
     checkBalance();
-  }, [preComputedConsoleAddress, feeEstimate]);
+  }, [preComputedConsoleAddress, feeEstimate, chainId]);
 
   usePolling(() => {
     if (!deploymentStatus?.taskId) return;
@@ -190,7 +227,6 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
 
   return (
     <FlexContainer flexDirection="column" width={100}>
-      {/* Header with Wallet Button */}
       <FlexContainer
         justifyContent="space-between"
         alignItems="center"
@@ -213,7 +249,6 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         <ConnectButton />
       </FlexContainer>
 
-      {/* Main Content */}
       <FlexContainer
         style={{
           maxWidth: "800px",
@@ -223,7 +258,6 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
         }}
         flexDirection="column"
       >
-        {/* Title Section */}
         <FlexContainer flexDirection="column" gap={1}>
           <Typography
             type="TITLE_XL"
@@ -234,129 +268,162 @@ function StrategyPage({ eoa, chainId }: StrategyPageProps) {
           <Typography type="BODY_MEDIUM_S" style={{ color: "#999999" }}>
             Enable automated claiming of your wSwell rewards
           </Typography>
+          <Typography type="BODY_MEDIUM_S" style={{ color: "#999999", marginTop: "0.5rem" }}>
+            Note: If you've recently activated your claim, it may take a few minutes for the status to be reflected here while Goldsky indexes the transaction. We'll keep checking and update the status automatically.
+          </Typography>
         </FlexContainer>
 
-        {/* Status Cards */}
-        <FlexContainer flexDirection="column" gap={2}>
-          {/* Connected Wallet */}
-          <FlexContainer
-            flexDirection="column"
-            padding="1.5rem"
-            style={{
-              background: "rgba(19,34,172,0.1)",
-              borderRadius: "16px",
-              border: "1px solid rgba(19,34,172,0.2)",
-            }}
-          >
-            <FlexContainer
-              alignItems="center"
-              gap={1}
-              style={{ marginBottom: "0.75rem" }}
-            >
-              <div
+        {eoa ? (
+          <>
+            <FlexContainer flexDirection="column" gap={2}>
+              <FlexContainer
+                flexDirection="column"
+                padding="1.5rem"
                 style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "50%",
-                  backgroundColor: "#1322AC",
+                  background: "rgba(19,34,172,0.1)",
+                  borderRadius: "16px",
+                  border: "1px solid rgba(19,34,172,0.2)",
                 }}
-              />
-              <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
-                Connected Wallet
-              </Typography>
+              >
+                <FlexContainer
+                  alignItems="center"
+                  gap={1}
+                  style={{ marginBottom: "0.75rem" }}
+                >
+                  <div
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: "#1322AC",
+                    }}
+                  />
+                  <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
+                    Connected Wallet
+                  </Typography>
+                </FlexContainer>
+                <Typography
+                  type="BODY_MEDIUM_S"
+                  style={{ color: "#999999", wordBreak: "break-all" }}
+                >
+                  {eoa}
+                </Typography>
+              </FlexContainer>
+
+              <FlexContainer
+                flexDirection="column"
+                padding="1.5rem"
+                style={{
+                  background: isAutomationActive
+                    ? "rgba(19,34,172,0.1)"
+                    : "rgba(32,34,38,0.5)",
+                  borderRadius: "16px",
+                  border: isAutomationActive
+                    ? "1px solid rgba(19,34,172,0.2)"
+                    : "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <FlexContainer
+                  alignItems="center"
+                  gap={1}
+                  style={{ marginBottom: "0.75rem" }}
+                >
+                  {isAutomationActive ? (
+                    <CheckCircle size={16} color="#1322AC" />
+                  ) : (
+                    <LayoutDashboard size={16} color="#999999" />
+                  )}
+                  <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
+                    {isAutomationActive
+                      ? "Automation Active"
+                      : "Automation Console"}
+                  </Typography>
+                </FlexContainer>
+                {preComputedConsoleAddress && (
+                  <Typography
+                    type="BODY_MEDIUM_S"
+                    style={{ color: "#999999", wordBreak: "break-all" }}
+                  >
+                    {preComputedConsoleAddress}
+                  </Typography>
+                )}
+                {txHash && (
+                  <Typography
+                    type="BODY_MEDIUM_S"
+                    style={{
+                      color: "#999999",
+                      marginTop: "0.5rem",
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    Transaction: {' '}
+                    <a 
+                      href={`https://explorer.swellnetwork.io/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#1322AC" }}
+                    >
+                      {txHash}
+                    </a>
+                  </Typography>
+                )}
+              </FlexContainer>
             </FlexContainer>
+
+            {!isAutomationActive && (
+              <Button
+                onClick={handleActivateAutomation}
+                buttonSize="L"
+                buttonType="primary"
+                disabled={isActivating || !fundsDeposited}
+                style={{
+                  width: "100%",
+                  height: "56px",
+                  background: "#1322AC",
+                  borderRadius: "12px",
+                  marginTop: "1rem",
+                }}
+              >
+                <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
+                  {isActivating ? "Activating..." : "Activate Automation"}
+                </Typography>
+              </Button>
+            )}
+
             <Typography
               type="BODY_MEDIUM_S"
-              style={{ color: "#999999", wordBreak: "break-all" }}
-            >
-              {eoa}
-            </Typography>
-          </FlexContainer>
-
-          {/* Automation Console */}
-          <FlexContainer
-            flexDirection="column"
-            padding="1.5rem"
-            style={{
-              background: isAutomationActive
-                ? "rgba(19,34,172,0.1)"
-                : "rgba(32,34,38,0.5)",
-              borderRadius: "16px",
-              border: isAutomationActive
-                ? "1px solid rgba(19,34,172,0.2)"
-                : "1px solid rgba(255,255,255,0.1)",
-            }}
-          >
-            <FlexContainer
-              alignItems="center"
-              gap={1}
-              style={{ marginBottom: "0.75rem" }}
+              style={{ color: "#999999", textAlign: "center", marginTop: "1rem" }}
             >
               {isAutomationActive ? (
-                <CheckCircle size={16} color="#1322AC" />
+                <span>
+                  Your wSwell rewards will now be claimed automatically
+                  {txHash && (
+                    <span>
+                      {' '}- View transaction on{' '}
+                      <a 
+                        href={`https://explorer.swellnetwork.io/tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#1322AC" }}
+                      >
+                        Swell Explorer
+                      </a>
+                    </span>
+                  )}
+                </span>
               ) : (
-                <LayoutDashboard size={16} color="#999999" />
+                "Activating automation requires two steps: enabling permissions and deploying your automation console"
               )}
-              <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
-                {isAutomationActive
-                  ? "Automation Active"
-                  : "Automation Console"}
-              </Typography>
-            </FlexContainer>
-            {preComputedConsoleAddress && (
-              <Typography
-                type="BODY_MEDIUM_S"
-                style={{ color: "#999999", wordBreak: "break-all" }}
-              >
-                {preComputedConsoleAddress}
-              </Typography>
-            )}
-            {txHash && (
-              <Typography
-                type="BODY_MEDIUM_S"
-                style={{
-                  color: "#999999",
-                  marginTop: "0.5rem",
-                  wordBreak: "break-all",
-                }}
-              >
-                Transaction: {txHash}
-              </Typography>
-            )}
-          </FlexContainer>
-
-        </FlexContainer>
-
-        {/* Action Button */}
-        {!isAutomationActive && (
-          <Button
-            onClick={handleActivateAutomation}
-            buttonSize="L"
-            buttonType="primary"
-            disabled={isActivating || !fundsDeposited}
-            style={{
-              width: "100%",
-              height: "56px",
-              background: "#1322AC",
-              borderRadius: "12px",
-              marginTop: "1rem",
-            }}
-          >
-            <Typography type="BODY_MEDIUM_S" style={{ color: "#FFFFFF" }}>
-              {isActivating ? "Activating..." : "Activate Automation"}
             </Typography>
-          </Button>
+          </>
+        ) : (
+          <Typography
+            type="BODY_MEDIUM_S"
+            style={{ color: "#999999", textAlign: "center", marginTop: "2rem" }}
+          >
+            Please connect your wallet to continue
+          </Typography>
         )}
-
-        {/* Help Text */}
-        <Typography
-          type="BODY_MEDIUM_S"
-          style={{ color: "#999999", textAlign: "center", marginTop: "1rem" }}
-        >
-          {isAutomationActive
-            ? "Your wSwell rewards will now be claimed automatically"
-            : "Activating automation requires two steps: enabling permissions and deploying your automation console"}
-        </Typography>
       </FlexContainer>
     </FlexContainer>
   );
