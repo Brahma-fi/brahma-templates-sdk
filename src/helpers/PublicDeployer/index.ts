@@ -53,6 +53,7 @@ export class PublicDeployer {
    * @param {Address[]} tokens - The list of token addresses.
    * @param {string[]} amounts - The list of token amounts.
    * @param {AutomationSubscriptionLimits} automationSubscriptionLimits - The subscription limits.
+   * @param {Record<string, unknown>} metadata - Additional metadata.
    * @returns {Promise<TransferCalldataResponse | null>} The transfer calldata response or null if an error occurs.
    */
   async generateAutomationSubAccount(
@@ -64,7 +65,8 @@ export class PublicDeployer {
     feeEstimate: string,
     tokens: Address[],
     amounts: string[],
-    automationSubscriptionLimits: AutomationSubscriptionLimits
+    automationSubscriptionLimits: AutomationSubscriptionLimits,
+    metadata: Record<string, unknown>
   ): Promise<TransferCalldataResponse | null> {
     const payload = {
       owner,
@@ -76,6 +78,7 @@ export class PublicDeployer {
       feeEstimate,
       tokens,
       amounts,
+      metadata,
     };
     try {
       const response = await axiosInstance.post(
