@@ -15,7 +15,7 @@ export class PublicDeployer {
   private readonly communicator: Communicator;
   private readonly axiosInstance: AxiosInstance;
 
-  constructor(communicator: Communicator, baseURL: string, apiKey: string) {
+  constructor(communicator: Communicator, apiKey: string, baseURL: string) {
     this.communicator = communicator;
     this.axiosInstance = axios.create({
       baseURL,
