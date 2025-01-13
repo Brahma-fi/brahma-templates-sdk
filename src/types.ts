@@ -242,6 +242,11 @@ export type TransferCalldataResponse = {
   subscriptionDraftID: string;
 };
 
+export type PrecomputeResponse = {
+  subAccountAddress: string
+  consoleAddress: string
+}
+
 export type TaskIdStatusType =
   | "pending"
   | "executing"

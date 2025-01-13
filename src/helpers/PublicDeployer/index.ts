@@ -1,4 +1,5 @@
 import { Address } from "viem";
+import axios, { AxiosInstance } from "axios";
 
 import {
   AutomationSubscriptionLimits,
@@ -6,14 +7,19 @@ import {
   TaskStatusData,
   TransferCalldataResponse,
   Communicator,
+  PrecomputeResponse,
 } from "@/types";
-import { axiosInstance, routes } from "../api";
+import { routes } from "../api";
 
 export class PublicDeployer {
   private readonly communicator: Communicator;
+  private readonly axiosInstance: AxiosInstance;
 
-  constructor(communicator: Communicator, apiKey: string) {
+  constructor(communicator: Communicator, baseURL: string, apiKey: string) {
     this.communicator = communicator;
+    this.axiosInstance = axios.create({
+      baseURL,
+    });
   }
 
   /**
@@ -31,7 +37,7 @@ export class PublicDeployer {
     const payload = { owner, chainID: chainId, feeToken };
 
     try {
-      const response = await axiosInstance.post(
+      const response = await this.axiosInstance.post(
         routes.fetchPreComputeAddress,
         payload
       );
@@ -81,13 +87,71 @@ export class PublicDeployer {
       metadata,
     };
     try {
-      const response = await axiosInstance.post(
+      const response = await this.axiosInstance.post(
         routes.fetchDeployerSignature,
         payload
       );
       return response.data.data;
     } catch (err) {
       console.error("Error generating automation sub-account:", err);
+      return null;
+    }
+  }
+
+  /**
+   * Computes the deployment addresses for account and sub-account setup.
+   * @param {Address} owner - The address of the owner.
+   * @param {number} chainID - Chain ID for connected network.
+   * @param {string} registryID - The registry ID (Hardcoded).
+   * @param {string} subscriptionDraftID - The subscription draft ID (from /signature response).
+   * @param {string} subAccountPolicyCommit - The sub-account policy commit (from /signature response).
+   * @param {Address} feeToken - The address of the fee token.
+   * @param {Address[]} tokens - The list of token addresses.
+   * @param {string[]} amounts - The list of token amounts.
+   * @param {string} subAccountChainerSignature - The sub-account chainer signature (from /signature response).
+   * @param {string} feeEstimateSignature - The fee estimate signature (from /pre-compute response).
+   * @param {string} feeEstimate - The estimated fee.
+   * @param {Record<string, unknown>} metadata - Additional metadata.
+   * @returns {Promise<PrecomputeResponse | null>} The precomputed deployment addresses or null if an error occurs.
+   */
+  async computeDeploymentAddresses(
+    owner: Address,
+    chainID: number,
+    registryID: string,
+    subscriptionDraftID: string,
+    subAccountPolicyCommit: string,
+    feeToken: Address,
+    tokens: Address[],
+    amounts: string[],
+    subAccountChainerSignature: string,
+    feeEstimateSignature: string,
+    feeEstimate: string,
+    metadata: Record<string, unknown>
+  ): Promise<PrecomputeResponse | null> {
+    const payload = {
+      owner,
+      chainID,
+      registryID,
+      subscriptionDraftID,
+      subAccountPolicyCommit,
+      feeToken,
+      tokens,
+      amounts,
+      subAccountChainerSignature,
+      feeEstimateSignature,
+      feeEstimate,
+      metadata,
+      preComputeAddresses: true,
+    };
+
+    try {
+      const response = await this.axiosInstance.post(
+        routes.deployPublicStrategy,
+        payload
+      );
+      return response.data.data;
+    } catch (err) {
+      console.error("Error deploying account and sub-account:", err);
       return null;
     }
   }
@@ -138,7 +202,7 @@ export class PublicDeployer {
     };
 
     try {
-      const response = await axiosInstance.post(
+      const response = await this.axiosInstance.post(
         routes.deployPublicStrategy,
         payload
       );
@@ -157,7 +221,7 @@ export class PublicDeployer {
    */
   async fetchDeploymentStatus(taskId: string): Promise<TaskStatusData> {
     try {
-      const response = await axiosInstance.get(
+      const response = await this.axiosInstance.get(
         `${routes.fetchTaskStatus}/${taskId}`
       );
       return response.data.data;

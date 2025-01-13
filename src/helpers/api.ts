@@ -11,7 +11,3 @@ export const routes = {
   deployPublicStrategy: "/deployer/public-strategy/deploy",
   fetchTaskStatus: "/relayer/tasks/status",
 };
-
-export const axiosInstance = axios.create({
-  baseURL: "https://gtw.dev.brahma.fi/v1/",
-});
