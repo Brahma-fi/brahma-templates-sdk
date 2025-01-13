@@ -108,7 +108,7 @@ Here's a basic example of how to use the SDK in a React component:
 import React, { useState } from 'react';
 import { TemplatesSDK } from 'brahma-templates-sdk';
 
-const sdk = new TemplatesSDK('your-api-key');
+const sdk = new TemplatesSDK('your-api-key', 'https://your-backend-api-url.com');
 
 export default function Template() {
   const [value, setValue] = useState(false);
