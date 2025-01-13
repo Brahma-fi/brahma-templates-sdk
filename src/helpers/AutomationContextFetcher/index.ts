@@ -16,6 +16,9 @@ export class AutomationContextFetcher {
     this.communicator = communicator;
     this.axiosInstance = axios.create({
       baseURL,
+      headers: {
+        "x-api-key": apiKey,
+      },
     });
   }
 

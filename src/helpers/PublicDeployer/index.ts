@@ -19,6 +19,9 @@ export class PublicDeployer {
     this.communicator = communicator;
     this.axiosInstance = axios.create({
       baseURL,
+      headers: {
+        "x-api-key": apiKey,
+      },
     });
   }
 
