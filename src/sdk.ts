@@ -14,19 +14,28 @@ export default class TemplatesSDK {
   public builderCaller: BuilderCaller;
   public publicDeployer: PublicDeployer;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, baseURL: string) {
     if (!apiKey) {
       throw new Error("API key is required");
+    }
+
+    if (!baseURL) {
+      throw new Error("Base url is required");
     }
 
     this.communicator = new InterfaceCommunicator();
     this.apiKey = apiKey;
     this.automationContextFetcher = new AutomationContextFetcher(
       this.communicator,
-      this.apiKey
+      this.apiKey,
+      baseURL
     );
     this.builderCaller = new BuilderCaller(this.communicator, this.apiKey);
-    this.publicDeployer = new PublicDeployer(this.communicator, this.apiKey);
+    this.publicDeployer = new PublicDeployer(
+      this.communicator,
+      this.apiKey,
+      baseURL
+    );
   }
 
   async getClientFactory(): Promise<UserClientFactory> {

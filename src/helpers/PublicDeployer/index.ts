@@ -1,4 +1,5 @@
 import { Address } from "viem";
+import axios, { AxiosInstance } from "axios";
 
 import {
   AutomationSubscriptionLimits,
@@ -8,13 +9,17 @@ import {
   Communicator,
   PrecomputeResponse,
 } from "@/types";
-import { axiosInstance, routes } from "../api";
+import { routes } from "../api";
 
 export class PublicDeployer {
   private readonly communicator: Communicator;
+  private readonly axiosInstance: AxiosInstance;
 
-  constructor(communicator: Communicator, apiKey: string) {
+  constructor(communicator: Communicator, baseURL: string, apiKey: string) {
     this.communicator = communicator;
+    this.axiosInstance = axios.create({
+      baseURL,
+    });
   }
 
   /**
@@ -32,7 +37,7 @@ export class PublicDeployer {
     const payload = { owner, chainID: chainId, feeToken };
 
     try {
-      const response = await axiosInstance.post(
+      const response = await this.axiosInstance.post(
         routes.fetchPreComputeAddress,
         payload
       );
@@ -82,7 +87,7 @@ export class PublicDeployer {
       metadata,
     };
     try {
-      const response = await axiosInstance.post(
+      const response = await this.axiosInstance.post(
         routes.fetchDeployerSignature,
         payload
       );
@@ -140,7 +145,7 @@ export class PublicDeployer {
     };
 
     try {
-      const response = await axiosInstance.post(
+      const response = await this.axiosInstance.post(
         routes.deployPublicStrategy,
         payload
       );
@@ -197,7 +202,7 @@ export class PublicDeployer {
     };
 
     try {
-      const response = await axiosInstance.post(
+      const response = await this.axiosInstance.post(
         routes.deployPublicStrategy,
         payload
       );
@@ -216,7 +221,7 @@ export class PublicDeployer {
    */
   async fetchDeploymentStatus(taskId: string): Promise<TaskStatusData> {
     try {
-      const response = await axiosInstance.get(
+      const response = await this.axiosInstance.get(
         `${routes.fetchTaskStatus}/${taskId}`
       );
       return response.data.data;

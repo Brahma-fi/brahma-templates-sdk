@@ -1,18 +1,22 @@
 import { Address } from "viem";
+import axios, { AxiosInstance } from "axios";
 
 import {
   AutomationLogResponse,
   AutomationSubscription,
   Communicator,
-  Methods,
 } from "@/types";
-import { axiosInstance, routes } from "../api";
+import { routes } from "../api";
 
 export class AutomationContextFetcher {
   private readonly communicator: Communicator;
+  private readonly axiosInstance: AxiosInstance;
 
-  constructor(communicator: Communicator, apiKey: string) {
+  constructor(communicator: Communicator, apiKey: string, baseURL: string) {
     this.communicator = communicator;
+    this.axiosInstance = axios.create({
+      baseURL,
+    });
   }
 
   async fetchAutomationLogs(
@@ -23,7 +27,7 @@ export class AutomationContextFetcher {
         throw new Error("Automation ID is required");
       }
 
-      const response = await axiosInstance.get(
+      const response = await this.axiosInstance.get(
         `${routes.fetchAutomationLogs}/${automationId}`
       );
 
@@ -47,7 +51,7 @@ export class AutomationContextFetcher {
         throw new Error("Brahma Account address and chain ID are required");
       }
 
-      const response = await axiosInstance.get(
+      const response = await this.axiosInstance.get(
         `${routes.fetchAutomationSubscriptions}/${accountAddress}/${chainId}`
       );
 
