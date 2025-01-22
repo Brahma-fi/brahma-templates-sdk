@@ -30,7 +30,7 @@ class InterfaceCommunicator implements Communicator {
 
   private logIncomingMessage = (msg: InterfaceMessageEvent): void => {
     console.info(
-      `Safe Apps SDK v1: A message was received from origin ${msg.origin}. `,
+      `ConsoleKit: A message was received from origin ${msg.origin}. `,
       msg.data
     );
   };
@@ -41,7 +41,7 @@ class InterfaceCommunicator implements Communicator {
       this.handleIncomingMessage(msg.data);
     } else {
       console.info(
-        "Safe Apps SDK v1: A message was received from an unknown origin. ",
+        "ConsoleKit: A message was received from an unknown origin. ",
         msg.origin
       );
     }

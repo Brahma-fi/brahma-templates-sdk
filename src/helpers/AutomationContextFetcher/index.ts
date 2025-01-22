@@ -1,19 +1,17 @@
 import { Address } from "viem";
 import axios, { AxiosInstance } from "axios";
+import { AutomationLogResponse, AutomationSubscription } from "./types";
 
-import {
-  AutomationLogResponse,
-  AutomationSubscription,
-  Communicator,
-} from "@/types";
-import { routes } from "../api";
+const routes = {
+  // Automation Context Fetcher Routes
+  fetchAutomationSubscriptions: "/automations/subscriptions/console",
+  fetchAutomationLogs: "/kernel/logs",
+};
 
 export class AutomationContextFetcher {
-  private readonly communicator: Communicator;
   private readonly axiosInstance: AxiosInstance;
 
-  constructor(communicator: Communicator, apiKey: string, baseURL: string) {
-    this.communicator = communicator;
+  constructor(apiKey: string, baseURL: string) {
     this.axiosInstance = axios.create({
       baseURL,
       headers: {

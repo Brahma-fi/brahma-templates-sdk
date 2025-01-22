@@ -6,17 +6,21 @@ import {
   PreComputedAddressData,
   TaskStatusData,
   TransferCalldataResponse,
-  Communicator,
   PrecomputeResponse,
-} from "@/types";
-import { routes } from "../api";
+} from "./types";
+
+const routes = {
+  // Public Deployer Routes
+  fetchPreComputeAddress: "/deployer/public-strategy/precompute",
+  fetchDeployerSignature: "/deployer/public-strategy/signature",
+  deployPublicStrategy: "/deployer/public-strategy/deploy",
+  fetchTaskStatus: "/relayer/tasks/status",
+};
 
 export class PublicDeployer {
-  private readonly communicator: Communicator;
   private readonly axiosInstance: AxiosInstance;
 
-  constructor(communicator: Communicator, apiKey: string, baseURL: string) {
-    this.communicator = communicator;
+  constructor(apiKey: string, baseURL: string) {
     this.axiosInstance = axios.create({
       baseURL,
       headers: {

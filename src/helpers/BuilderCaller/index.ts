@@ -4,12 +4,12 @@ import {
   AddToTxnBuilderParams,
   BuilderParams,
   CancelAutomationParams,
-} from "@/types";
+} from "./types";
 
 export class BuilderCaller {
   private readonly communicator: Communicator;
 
-  constructor(communicator: Communicator, apiKey: string) {
+  constructor(communicator: Communicator) {
     this.communicator = communicator;
   }
 

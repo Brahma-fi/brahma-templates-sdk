@@ -1,4 +1,4 @@
-export { default as TemplatesSDK } from "./sdk";
+export { default as ConsoleKit } from "./sdk";
 
 export * from "./types";
 export * from "./helpers/Communicator";
