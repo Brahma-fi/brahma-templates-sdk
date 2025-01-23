@@ -163,3 +163,9 @@ export type ExecutorDetails = {
   updated_at: string;
   relayerAddresses: Address[];
 };
+
+export type ExecutorConfig = {
+  type: "INTERVAL";
+  defaultEvery: string;
+  executionTTL: string;
+};
