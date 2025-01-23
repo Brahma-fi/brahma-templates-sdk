@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import { Address } from "viem";
+import { Address, TypedData } from "viem";
 import {
   Account,
   AutomationRequest,
@@ -12,10 +12,11 @@ import {
   TaskResponse,
   UpdateAutomationParams,
   ExecutorDetails,
+  ExecutorConfig
 } from "./types";
 import {
   AutomationLogResponse,
-  AutomationSubscription,
+  AutomationSubscription
 } from "../AutomationContextFetcher/types";
 
 const routes = {
@@ -25,7 +26,7 @@ const routes = {
   fetchAutomationLogs: "/kernel/logs",
   indexTransaction: "/indexer/process",
   kernelTasks: "/kernel/tasks",
-  fetchExecutorDetails: "/kernel/executor",
+  kernelExecutor: "/kernel/executor"
 };
 
 export class VendorCaller {
@@ -35,8 +36,8 @@ export class VendorCaller {
     this.axiosInstance = axios.create({
       baseURL,
       headers: {
-        "x-api-key": apiKey,
-      },
+        "x-api-key": apiKey
+      }
     });
   }
 
@@ -70,7 +71,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "SUBSCRIBE",
-          params,
+          params
         } as AutomationRequest<SubscribeAutomationParams>
       );
 
@@ -90,7 +91,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "UPDATE",
-          params,
+          params
         } as AutomationRequest<UpdateAutomationParams>
       );
 
@@ -110,7 +111,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "CANCEL",
-          params,
+          params
         } as AutomationRequest<VendorCancelAutomationParams>
       );
 
@@ -199,11 +200,11 @@ export class VendorCaller {
       const response = await this.axiosInstance.get<TaskResponse>(
         `${routes.kernelTasks}/${registryId}`,
         {
-          params: { cursor, limit },
+          params: { cursor, limit }
         }
       );
 
-      if (!response.data.data.tasks) {
+      if (!response?.data?.data?.tasks) {
         throw new Error("No tasks found for the given registry ID");
       }
 
@@ -223,7 +224,7 @@ export class VendorCaller {
         taskRequest
       );
 
-      if (response.status !== 200) {
+      if (response?.status !== 200) {
         throw new Error("Failed to submit task");
       }
 
@@ -241,10 +242,10 @@ export class VendorCaller {
       }
 
       const response = await this.axiosInstance.get<{ data: ExecutorDetails }>(
-        `${routes.fetchExecutorDetails}/${registryId}`
+        `${routes.kernelExecutor}/${registryId}`
       );
 
-      if (!response.data.data) {
+      if (!response?.data?.data) {
         throw new Error("No executor details found for the given registry ID");
       }
 
@@ -252,6 +253,56 @@ export class VendorCaller {
     } catch (err: any) {
       console.error(`Error fetching executor details: ${err.message}`);
       throw err;
+    }
+  }
+
+  async generateExecutorRegistration712Message(
+    chainId: number,
+    registryId: string,
+    config: ExecutorConfig
+  ) {
+    return {
+      types: {
+        ModifyExecutor: [
+          { name: "registryId", type: "string" },
+          { name: "type", type: "string" },
+          { name: "ttl", type: "string" },
+          { name: "enable", type: "bool" }
+        ]
+      },
+      domain: {
+        chainId: chainId
+      },
+      message: {
+        registryId: registryId,
+        type: config.type,
+        ttl: config.executionTTL,
+        enable: true
+      }
+    };
+  }
+
+  async registerExecutorOnKernel(
+    registryId: string,
+    signature: string,
+    config: ExecutorConfig
+  ) {
+    const payload = {
+      registryId,
+      signature,
+      config
+    };
+
+    try {
+      const response = await this.axiosInstance.post(
+        `${routes.kernelExecutor}`,
+        payload
+      );
+
+      if (response?.status !== 201)
+        throw new Error("Failed to register executor on kernel");
+    } catch (error) {
+      throw new Error("Failed to register executor on kernel");
     }
   }
 }
