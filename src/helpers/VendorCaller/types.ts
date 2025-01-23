@@ -164,8 +164,32 @@ export type ExecutorDetails = {
   relayerAddresses: Address[];
 };
 
-export type ExecutorConfig = {
+export type KernelExecutorConfig = {
   type: "INTERVAL";
   defaultEvery: string;
   executionTTL: string;
+};
+
+export type ConsoleExecutorConfig = {
+  timestamp: number;
+  executor: string;
+  inputTokens: Address[];
+  hopAddresses: Address[];
+  feeInBPS: string;
+  feeToken: Address;
+  feeReceiver: Address;
+  limitPerExecution: boolean;
+  clientId: string;
+};
+
+export type GenerateExecutableTypedDataParams = {
+  chainId: number;
+  pluginAddress: Address;
+  operation: number;
+  to: Address;
+  account: Address;
+  executor: Address;
+  value: string;
+  nonce: string;
+  data: string;
 };
