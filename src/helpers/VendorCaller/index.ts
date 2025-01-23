@@ -12,11 +12,13 @@ import {
   TaskResponse,
   UpdateAutomationParams,
   ExecutorDetails,
-  ExecutorConfig
+  KernelExecutorConfig,
+  ConsoleExecutorConfig,
+  GenerateExecutableTypedDataParams,
 } from "./types";
 import {
   AutomationLogResponse,
-  AutomationSubscription
+  AutomationSubscription,
 } from "../AutomationContextFetcher/types";
 
 const routes = {
@@ -26,7 +28,8 @@ const routes = {
   fetchAutomationLogs: "/kernel/logs",
   indexTransaction: "/indexer/process",
   kernelTasks: "/kernel/tasks",
-  kernelExecutor: "/kernel/executor"
+  kernelExecutor: "/kernel/executor",
+  automationsExecutor: "/automations/executor",
 };
 
 export class VendorCaller {
@@ -36,8 +39,8 @@ export class VendorCaller {
     this.axiosInstance = axios.create({
       baseURL,
       headers: {
-        "x-api-key": apiKey
-      }
+        "x-api-key": apiKey,
+      },
     });
   }
 
@@ -71,7 +74,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "SUBSCRIBE",
-          params
+          params,
         } as AutomationRequest<SubscribeAutomationParams>
       );
 
@@ -91,7 +94,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "UPDATE",
-          params
+          params,
         } as AutomationRequest<UpdateAutomationParams>
       );
 
@@ -111,7 +114,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "CANCEL",
-          params
+          params,
         } as AutomationRequest<VendorCancelAutomationParams>
       );
 
@@ -200,7 +203,7 @@ export class VendorCaller {
       const response = await this.axiosInstance.get<TaskResponse>(
         `${routes.kernelTasks}/${registryId}`,
         {
-          params: { cursor, limit }
+          params: { cursor, limit },
         }
       );
 
@@ -256,10 +259,10 @@ export class VendorCaller {
     }
   }
 
-  async generateExecutorRegistration712Message(
+  async generateKernelExecutorRegistration712Message(
     chainId: number,
     registryId: string,
-    config: ExecutorConfig
+    config: KernelExecutorConfig
   ) {
     return {
       types: {
@@ -267,30 +270,30 @@ export class VendorCaller {
           { name: "registryId", type: "string" },
           { name: "type", type: "string" },
           { name: "ttl", type: "string" },
-          { name: "enable", type: "bool" }
-        ]
+          { name: "enable", type: "bool" },
+        ],
       },
       domain: {
-        chainId: chainId
+        chainId: chainId,
       },
       message: {
         registryId: registryId,
         type: config.type,
         ttl: config.executionTTL,
-        enable: true
-      }
+        enable: true,
+      },
     };
   }
 
   async registerExecutorOnKernel(
     registryId: string,
     signature: string,
-    config: ExecutorConfig
+    config: KernelExecutorConfig
   ) {
     const payload = {
       registryId,
       signature,
-      config
+      config,
     };
 
     try {
@@ -304,5 +307,123 @@ export class VendorCaller {
     } catch (error) {
       throw new Error("Failed to register executor on kernel");
     }
+  }
+
+  async generateConsoleExecutorRegistration712Message(
+    chainId: number,
+    config: ConsoleExecutorConfig
+  ) {
+    return {
+      types: {
+        RegisterExecutor: [
+          { name: "timestamp", type: "uint256" },
+          { name: "executor", type: "address" },
+          { name: "inputTokens", type: "address[]" },
+          { name: "hopAddresses", type: "address[]" },
+          { name: "feeInBPS", type: "uint256" },
+          { name: "feeToken", type: "address" },
+          { name: "feeReceiver", type: "address" },
+          { name: "limitPerExecution", type: "bool" },
+          { name: "clientId", type: "string" },
+        ],
+      },
+      domain: {
+        chainId: chainId,
+      },
+      message: config,
+      primaryType: "RegisterExecutor",
+    };
+  }
+
+  async registerExecutorOnConsole(
+    signature: string,
+    chainId: number,
+    config: ConsoleExecutorConfig,
+    name: string,
+    logo: string,
+    metadata: any
+  ) {
+    const payload = {
+      config: {
+        inputTokens: config.inputTokens,
+        hopAddresses: config.hopAddresses,
+        feeInBPS: "0",
+        feeToken: "0x0000000000000000000000000000000000000000",
+        feeReceiver: config.feeReceiver,
+        limitPerExecution: config.limitPerExecution,
+      },
+      executor: config.executor,
+      signature: signature,
+      chainId: chainId,
+      timestamp: config.timestamp,
+      executorMetadata: {
+        id: config.clientId,
+        name: name,
+        logo: logo,
+        metadata: metadata,
+      },
+    };
+
+    try {
+      const response = await this.axiosInstance.post(
+        `${routes.automationsExecutor}`,
+        payload
+      );
+
+      if (response?.status !== 201)
+        throw new Error("Failed to register executor on Brahma");
+    } catch (error) {
+      throw new Error("Failed to register executor on Brahma");
+    }
+  }
+
+  async generateExecutableDigest712Message(
+    params: GenerateExecutableTypedDataParams
+  ) {
+    return {
+      types: {
+        ExecutionParams: [
+          { name: "operation", type: "uint8" },
+          { name: "to", type: "address" },
+          { name: "account", type: "address" },
+          { name: "executor", type: "address" },
+          { name: "gasToken", type: "address" },
+          { name: "refundReceiver", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "safeTxGas", type: "uint256" },
+          { name: "baseGas", type: "uint256" },
+          { name: "gasPrice", type: "uint256" },
+          { name: "data", type: "bytes" },
+        ],
+        EIP712Domain: [
+          { name: "name", type: "string" },
+          { name: "version", type: "string" },
+          { name: "chainId", type: "uint256" },
+          { name: "verifyingContract", type: "address" },
+        ],
+      },
+      primaryType: "ExecutionParams",
+      domain: {
+        name: "ExecutorPlugin",
+        version: "1.0",
+        chainId: params.chainId,
+        verifyingContract: params.pluginAddress,
+      },
+      message: {
+        operation: params.operation,
+        to: params.to,
+        account: params.account,
+        executor: params.executor,
+        value: params.value,
+        nonce: params.nonce,
+        data: params.data,
+        gasToken: "0x0000000000000000000000000000000000000000", // Default value
+        refundReceiver: "0x0000000000000000000000000000000000000000", // Default value
+        safeTxGas: "0", // Default value
+        baseGas: "0", // Default value
+        gasPrice: "0", // Default value
+      },
+    };
   }
 }
