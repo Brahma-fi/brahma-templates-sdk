@@ -347,8 +347,8 @@ export class VendorCaller {
       config: {
         inputTokens: config.inputTokens,
         hopAddresses: config.hopAddresses,
-        feeInBPS: config.feeInBPS,
-        feeToken: config.feeToken,
+        feeInBPS: "0",
+        feeToken: "0x0000000000000000000000000000000000000000",
         feeReceiver: config.feeReceiver,
         limitPerExecution: config.limitPerExecution,
       },

@@ -175,8 +175,6 @@ export type ConsoleExecutorConfig = {
   executor: string;
   inputTokens: Address[];
   hopAddresses: Address[];
-  feeInBPS: string;
-  feeToken: Address;
   feeReceiver: Address;
   limitPerExecution: boolean;
   clientId: string;
