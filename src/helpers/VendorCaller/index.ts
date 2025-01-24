@@ -21,6 +21,8 @@ import {
   AutomationLogResponse,
   AutomationSubscription
 } from "../AutomationContextFetcher/types";
+import { ethers, JsonRpcProvider } from "ethers";
+import { ExecutorPluginABI } from "@/contracts";
 
 const routes = {
   fetchExistingAccounts: "/user/consoles",
@@ -431,5 +433,22 @@ export class VendorCaller {
         gasPrice: "0" // Default value
       }
     };
+  }
+
+  async getExecutorNonce(
+    provider: JsonRpcProvider,
+    automationAccount: Address,
+    executor: Address,
+    executorPlugin: Address
+  ) {
+    const executorPluginContract = new ethers.Contract(
+      executorPlugin,
+      ExecutorPluginABI,
+      provider
+    );
+    return await executorPluginContract.executorNonce(
+      automationAccount,
+      executor
+    );
   }
 }
