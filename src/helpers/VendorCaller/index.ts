@@ -15,11 +15,11 @@ import {
   KernelExecutorConfig,
   ConsoleExecutorConfig,
   GenerateExecutableTypedDataParams,
-  ConsoleExecutorPayload,
+  ConsoleExecutorPayload
 } from "./types";
 import {
   AutomationLogResponse,
-  AutomationSubscription,
+  AutomationSubscription
 } from "../AutomationContextFetcher/types";
 
 const routes = {
@@ -30,7 +30,7 @@ const routes = {
   indexTransaction: "/indexer/process",
   kernelTasks: "/kernel/tasks",
   kernelExecutor: "/kernel/executor",
-  automationsExecutor: "/automations/executor",
+  automationsExecutor: "/automations/executor"
 };
 
 export class VendorCaller {
@@ -40,8 +40,8 @@ export class VendorCaller {
     this.axiosInstance = axios.create({
       baseURL,
       headers: {
-        "x-api-key": apiKey,
-      },
+        "x-api-key": apiKey
+      }
     });
   }
 
@@ -75,7 +75,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "SUBSCRIBE",
-          params,
+          params
         } as AutomationRequest<SubscribeAutomationParams>
       );
 
@@ -95,7 +95,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "UPDATE",
-          params,
+          params
         } as AutomationRequest<UpdateAutomationParams>
       );
 
@@ -115,7 +115,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "CANCEL",
-          params,
+          params
         } as AutomationRequest<VendorCancelAutomationParams>
       );
 
@@ -204,7 +204,7 @@ export class VendorCaller {
       const response = await this.axiosInstance.get<TaskResponse>(
         `${routes.kernelTasks}/${registryId}`,
         {
-          params: { cursor, limit },
+          params: { cursor, limit }
         }
       );
 
@@ -271,18 +271,18 @@ export class VendorCaller {
           { name: "registryId", type: "string" },
           { name: "type", type: "string" },
           { name: "ttl", type: "string" },
-          { name: "enable", type: "bool" },
-        ],
+          { name: "enable", type: "bool" }
+        ]
       },
       domain: {
-        chainId: chainId,
+        chainId: chainId
       },
       message: {
         registryId: registryId,
         type: config.type,
         ttl: config.executionTTL,
-        enable: true,
-      },
+        enable: true
+      }
     };
   }
 
@@ -294,7 +294,7 @@ export class VendorCaller {
     const payload = {
       registryId,
       signature,
-      config,
+      config
     };
 
     try {
@@ -325,14 +325,18 @@ export class VendorCaller {
           { name: "feeToken", type: "address" },
           { name: "feeReceiver", type: "address" },
           { name: "limitPerExecution", type: "bool" },
-          { name: "clientId", type: "string" },
-        ],
+          { name: "clientId", type: "string" }
+        ]
       },
       domain: {
-        chainId: chainId,
+        chainId: chainId
       },
-      message: config,
-      primaryType: "RegisterExecutor",
+      message: {
+        ...config,
+        feeInBPS: 0,
+        feeToken: "0x0000000000000000000000000000000000000000"
+      },
+      primaryType: "RegisterExecutor"
     };
   }
 
@@ -351,7 +355,7 @@ export class VendorCaller {
         feeInBPS: "0",
         feeToken: "0x0000000000000000000000000000000000000000",
         feeReceiver: config.feeReceiver,
-        limitPerExecution: config.limitPerExecution,
+        limitPerExecution: config.limitPerExecution
       },
       executor: config.executor,
       signature: signature,
@@ -361,8 +365,8 @@ export class VendorCaller {
         id: config.clientId,
         name: name,
         logo: logo,
-        metadata: metadata,
-      },
+        metadata: metadata
+      }
     };
 
     try {
@@ -396,21 +400,21 @@ export class VendorCaller {
           { name: "safeTxGas", type: "uint256" },
           { name: "baseGas", type: "uint256" },
           { name: "gasPrice", type: "uint256" },
-          { name: "data", type: "bytes" },
+          { name: "data", type: "bytes" }
         ],
         EIP712Domain: [
           { name: "name", type: "string" },
           { name: "version", type: "string" },
           { name: "chainId", type: "uint256" },
-          { name: "verifyingContract", type: "address" },
-        ],
+          { name: "verifyingContract", type: "address" }
+        ]
       },
       primaryType: "ExecutionParams",
       domain: {
         name: "ExecutorPlugin",
         version: "1.0",
         chainId: params.chainId,
-        verifyingContract: params.pluginAddress,
+        verifyingContract: params.pluginAddress
       },
       message: {
         operation: params.operation,
@@ -424,8 +428,8 @@ export class VendorCaller {
         refundReceiver: "0x0000000000000000000000000000000000000000", // Default value
         safeTxGas: "0", // Default value
         baseGas: "0", // Default value
-        gasPrice: "0", // Default value
-      },
+        gasPrice: "0" // Default value
+      }
     };
   }
 }
