@@ -430,7 +430,7 @@ export class VendorCaller {
     };
   }
 
-  async getExecutorNonce(
+  async fetchExecutorNonce(
     automationAccount: Address,
     executor: Address,
     chainId: number
@@ -455,7 +455,7 @@ export class VendorCaller {
     }
   }
 
-  async getWorkflowState(taskId: string) {
+  async fetchWorkflowState(taskId: string) {
     try {
       if (!taskId || taskId === "") {
         throw new Error("TaskID is required to get workflow state");
