@@ -403,12 +403,6 @@ export class VendorCaller {
           { name: "baseGas", type: "uint256" },
           { name: "gasPrice", type: "uint256" },
           { name: "data", type: "bytes" }
-        ],
-        EIP712Domain: [
-          { name: "name", type: "string" },
-          { name: "version", type: "string" },
-          { name: "chainId", type: "uint256" },
-          { name: "verifyingContract", type: "address" }
         ]
       },
       primaryType: "ExecutionParams",
