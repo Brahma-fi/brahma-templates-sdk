@@ -95,11 +95,7 @@ export type Task = {
         feeAmount: string;
         feeToken: Address;
         id: string;
-        metadata: {
-          every: string;
-          rewardToken: Address;
-          userAddress: Address;
-        };
+        metadata: Object;
         registryId: string;
         status: number;
         subAccountAddress: Address;
