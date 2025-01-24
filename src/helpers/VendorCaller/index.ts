@@ -230,7 +230,7 @@ export class VendorCaller {
         taskRequest
       );
 
-      if (response?.status !== 200) {
+      if (response?.status !== 202) {
         throw new Error("Failed to submit task");
       }
 
