@@ -95,7 +95,7 @@ export type Task = {
         feeAmount: string;
         feeToken: Address;
         id: string;
-        metadata: Object;
+        metadata: any;
         registryId: string;
         status: number;
         subAccountAddress: Address;
