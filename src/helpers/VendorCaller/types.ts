@@ -174,7 +174,7 @@ export type ConsoleExecutorPayload = {
   config: {
     inputTokens: Address[];
     hopAddresses: Address[];
-    feeInBPS: string;
+    feeInBPS: number;
     feeToken: Address;
     feeReceiver: Address;
     limitPerExecution: boolean;
