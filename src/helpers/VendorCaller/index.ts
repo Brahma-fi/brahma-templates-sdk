@@ -15,14 +15,13 @@ import {
   KernelExecutorConfig,
   ConsoleExecutorConfig,
   GenerateExecutableTypedDataParams,
-  ConsoleExecutorPayload
+  ConsoleExecutorPayload,
+  WorkflowStateResponse
 } from "./types";
 import {
   AutomationLogResponse,
   AutomationSubscription
 } from "../AutomationContextFetcher/types";
-import { ethers, JsonRpcProvider } from "ethers";
-import { ExecutorPluginABI } from "@/contracts";
 
 const routes = {
   fetchExistingAccounts: "/user/consoles",
@@ -32,7 +31,9 @@ const routes = {
   indexTransaction: "/indexer/process",
   kernelTasks: "/kernel/tasks",
   kernelExecutor: "/kernel/executor",
-  automationsExecutor: "/automations/executor"
+  automationsExecutor: "/automations/executor",
+  executorNonce: "/automations/executor/nonce",
+  workflowStatus: "/kernel/tasks/status"
 };
 
 export class VendorCaller {
@@ -430,19 +431,48 @@ export class VendorCaller {
   }
 
   async getExecutorNonce(
-    provider: JsonRpcProvider,
     automationAccount: Address,
     executor: Address,
-    executorPlugin: Address
+    chainId: number
   ) {
-    const executorPluginContract = new ethers.Contract(
-      executorPlugin,
-      ExecutorPluginABI,
-      provider
-    );
-    return await executorPluginContract.executorNonce(
-      automationAccount,
-      executor
-    );
+    try {
+      if (!automationAccount || !executor || !chainId) {
+        throw new Error("Invalid params to get executor nonce");
+      }
+
+      const response = await this.axiosInstance.get<{
+        data: string;
+      }>(`${routes.executorNonce}/${executor}/${chainId}/${automationAccount}`);
+
+      if (!response?.data?.data) {
+        throw new Error("Executor nonce not found");
+      }
+
+      return response.data.data;
+    } catch (err: any) {
+      console.error(`Error fetching executor nonce: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async getWorkflowState(taskId: string) {
+    try {
+      if (!taskId || taskId === "") {
+        throw new Error("TaskID is required to get workflow state");
+      }
+
+      const response = await this.axiosInstance.get<{
+        data: WorkflowStateResponse;
+      }>(`${routes.workflowStatus}/${taskId}`);
+
+      if (!response?.data?.data) {
+        throw new Error("Workflow state not found");
+      }
+
+      return response.data.data;
+    } catch (err: any) {
+      console.error(`Error fetching workflow state: ${err.message}`);
+      throw err;
+    }
   }
 }

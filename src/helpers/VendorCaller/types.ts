@@ -208,3 +208,27 @@ export type GenerateExecutableTypedDataParams = {
   nonce: string;
   data: string;
 };
+
+export enum WorkflowExecutionStatus {
+  UNSPECIFIED = 0,
+  RUNNING = 1,
+  COMPLETED = 2,
+  FAILED = 3,
+  CANCELED = 4,
+  TERMINATED = 5,
+  CONTINUED_AS_NEW = 6,
+  TIMED_OUT = 7
+}
+
+export type WorkflowStateResponse = {
+  status: WorkflowExecutionStatus;
+  out: {
+    metadata: any;
+    message: string;
+    createdAt: string;
+    subAccountAddress: Address;
+    chainId: number;
+    subId: string;
+    outputTxHash: string;
+  } | null;
+};
