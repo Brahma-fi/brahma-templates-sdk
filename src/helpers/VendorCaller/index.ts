@@ -184,7 +184,7 @@ export class VendorCaller {
         `${routes.indexTransaction}/${transactionHash}/${chainID}`
       );
 
-      if (response.status !== 200) {
+      if (response.status !== 204) {
         throw new Error("Failed to index transaction");
       }
 
