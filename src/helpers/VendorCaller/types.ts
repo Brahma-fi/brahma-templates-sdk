@@ -170,6 +170,27 @@ export type KernelExecutorConfig = {
   executionTTL: string;
 };
 
+export type ConsoleExecutorPayload = {
+  config: {
+    inputTokens: Address[];
+    hopAddresses: Address[];
+    feeInBPS: string;
+    feeToken: Address;
+    feeReceiver: Address;
+    limitPerExecution: boolean;
+  };
+  executor: string;
+  signature: string;
+  chainId: number;
+  timestamp: number;
+  executorMetadata: {
+    id: string;
+    name: string;
+    logo: string;
+    metadata: any;
+  };
+};
+
 export type ConsoleExecutorConfig = {
   timestamp: number;
   executor: string;

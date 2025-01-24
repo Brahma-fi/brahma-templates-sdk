@@ -15,6 +15,7 @@ import {
   KernelExecutorConfig,
   ConsoleExecutorConfig,
   GenerateExecutableTypedDataParams,
+  ConsoleExecutorPayload,
 } from "./types";
 import {
   AutomationLogResponse,
@@ -342,8 +343,8 @@ export class VendorCaller {
     name: string,
     logo: string,
     metadata: any
-  ) {
-    const payload = {
+  ): Promise<(ConsoleExecutorPayload & { id: string; status: number }) | null> {
+    const payload: ConsoleExecutorPayload = {
       config: {
         inputTokens: config.inputTokens,
         hopAddresses: config.hopAddresses,
@@ -365,13 +366,14 @@ export class VendorCaller {
     };
 
     try {
-      const response = await this.axiosInstance.post(
-        `${routes.automationsExecutor}`,
-        payload
-      );
+      const response = await this.axiosInstance.post<{
+        data: ConsoleExecutorPayload & { id: string; status: number };
+      }>(`${routes.automationsExecutor}`, payload);
 
       if (response?.status !== 201)
         throw new Error("Failed to register executor on Brahma");
+
+      return response.data.data;
     } catch (error) {
       throw new Error("Failed to register executor on Brahma");
     }
