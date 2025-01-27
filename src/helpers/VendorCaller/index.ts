@@ -1,9 +1,7 @@
-import axios, { AxiosInstance } from "axios";
-import { Address, TypedData } from "viem";
+import axios, { AxiosError, AxiosInstance } from "axios";
+import { Address } from "viem";
 import {
   Account,
-  AutomationRequest,
-  AutomationResponse,
   VendorCancelAutomationParams,
   SubmitTaskRequest,
   SubmitTaskResponse,
@@ -16,11 +14,21 @@ import {
   ConsoleExecutorConfig,
   GenerateExecutableTypedDataParams,
   ConsoleExecutorPayload,
-  WorkflowStateResponse
+  WorkflowStateResponse,
+  GeneratePayload,
+  GenerateCalldataResponse,
+  SendParams,
+  ActionNameToId,
+  SwapParams,
+  SwapQuoteRoutes,
+  GetBridgingRoutes,
+  GetRoutingResponse,
+  GetBridgingStatus,
+  BridgeParams,
 } from "./types";
 import {
   AutomationLogResponse,
-  AutomationSubscription
+  AutomationSubscription,
 } from "../AutomationContextFetcher/types";
 
 const routes = {
@@ -33,7 +41,14 @@ const routes = {
   kernelExecutor: "/kernel/executor",
   automationsExecutor: "/automations/executor",
   executorNonce: "/automations/executor/nonce",
-  workflowStatus: "/kernel/tasks/status"
+  workflowStatus: "/kernel/tasks/status",
+
+  // swap
+  swapRoutes: "/builder/swap/routes",
+
+  // bridge
+  fetchBridgingRoutes: "/builder/bridge/routes",
+  fetchBridgingStatus: "/builder/bridge/status",
 };
 
 export class VendorCaller {
@@ -43,8 +58,8 @@ export class VendorCaller {
     this.axiosInstance = axios.create({
       baseURL,
       headers: {
-        "x-api-key": apiKey
-      }
+        "x-api-key": apiKey,
+      },
     });
   }
 
@@ -71,15 +86,15 @@ export class VendorCaller {
 
   async subscribeToAutomation(
     params: SubscribeAutomationParams
-  ): Promise<AutomationResponse> {
+  ): Promise<GenerateCalldataResponse> {
     try {
-      const response = await this.axiosInstance.post<AutomationResponse>(
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
         routes.generateCalldata,
         {
           id: "AUTOMATION",
           action: "SUBSCRIBE",
-          params
-        } as AutomationRequest<SubscribeAutomationParams>
+          params,
+        } as GeneratePayload<SubscribeAutomationParams, "SUBSCRIBE">
       );
 
       return response.data;
@@ -91,15 +106,15 @@ export class VendorCaller {
 
   async updateAutomation(
     params: UpdateAutomationParams
-  ): Promise<AutomationResponse> {
+  ): Promise<GenerateCalldataResponse> {
     try {
-      const response = await this.axiosInstance.post<AutomationResponse>(
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
         routes.generateCalldata,
         {
           id: "AUTOMATION",
           action: "UPDATE",
-          params
-        } as AutomationRequest<UpdateAutomationParams>
+          params,
+        } as GeneratePayload<UpdateAutomationParams, "UPDATE">
       );
 
       return response.data;
@@ -111,15 +126,15 @@ export class VendorCaller {
 
   async cancelAutomation(
     params: VendorCancelAutomationParams
-  ): Promise<AutomationResponse> {
+  ): Promise<GenerateCalldataResponse> {
     try {
-      const response = await this.axiosInstance.post<AutomationResponse>(
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
         routes.generateCalldata,
         {
           id: "AUTOMATION",
           action: "CANCEL",
-          params
-        } as AutomationRequest<VendorCancelAutomationParams>
+          params,
+        } as GeneratePayload<VendorCancelAutomationParams, "CANCEL">
       );
 
       return response.data;
@@ -207,7 +222,7 @@ export class VendorCaller {
       const response = await this.axiosInstance.get<TaskResponse>(
         `${routes.kernelTasks}/${registryId}`,
         {
-          params: { cursor, limit }
+          params: { cursor, limit },
         }
       );
 
@@ -274,18 +289,18 @@ export class VendorCaller {
           { name: "registryId", type: "string" },
           { name: "type", type: "string" },
           { name: "ttl", type: "string" },
-          { name: "enable", type: "bool" }
-        ]
+          { name: "enable", type: "bool" },
+        ],
       },
       domain: {
-        chainId: chainId
+        chainId: chainId,
       },
       message: {
         registryId: registryId,
         type: config.type,
         ttl: config.executionTTL,
-        enable: true
-      }
+        enable: true,
+      },
     };
   }
 
@@ -297,7 +312,7 @@ export class VendorCaller {
     const payload = {
       registryId,
       signature,
-      config
+      config,
     };
 
     try {
@@ -328,18 +343,18 @@ export class VendorCaller {
           { name: "feeToken", type: "address" },
           { name: "feeReceiver", type: "address" },
           { name: "limitPerExecution", type: "bool" },
-          { name: "clientId", type: "string" }
-        ]
+          { name: "clientId", type: "string" },
+        ],
       },
       domain: {
-        chainId: chainId
+        chainId: chainId,
       },
       message: {
         ...config,
         feeInBPS: 0,
-        feeToken: "0x0000000000000000000000000000000000000000"
+        feeToken: "0x0000000000000000000000000000000000000000",
       },
-      primaryType: "RegisterExecutor"
+      primaryType: "RegisterExecutor",
     };
   }
 
@@ -358,7 +373,7 @@ export class VendorCaller {
         feeInBPS: 0,
         feeToken: "0x0000000000000000000000000000000000000000",
         feeReceiver: config.feeReceiver,
-        limitPerExecution: config.limitPerExecution
+        limitPerExecution: config.limitPerExecution,
       },
       executor: config.executor,
       signature: signature,
@@ -368,8 +383,8 @@ export class VendorCaller {
         id: config.clientId,
         name: name,
         logo: logo,
-        metadata: metadata
-      }
+        metadata: metadata,
+      },
     };
 
     try {
@@ -403,15 +418,15 @@ export class VendorCaller {
           { name: "safeTxGas", type: "uint256" },
           { name: "baseGas", type: "uint256" },
           { name: "gasPrice", type: "uint256" },
-          { name: "data", type: "bytes" }
-        ]
+          { name: "data", type: "bytes" },
+        ],
       },
       primaryType: "ExecutionParams",
       domain: {
         name: "ExecutorPlugin",
         version: "1.0",
         chainId: params.chainId,
-        verifyingContract: params.pluginAddress
+        verifyingContract: params.pluginAddress,
       },
       message: {
         operation: params.operation,
@@ -425,8 +440,8 @@ export class VendorCaller {
         refundReceiver: "0x0000000000000000000000000000000000000000", // Default value
         safeTxGas: "0", // Default value
         baseGas: "0", // Default value
-        gasPrice: "0" // Default value
-      }
+        gasPrice: "0", // Default value
+      },
     };
   }
 
@@ -472,6 +487,178 @@ export class VendorCaller {
       return response.data.data;
     } catch (err: any) {
       console.error(`Error fetching workflow state: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async send(
+    chainId: number,
+    accountAddress: Address,
+    params: SendParams
+  ): Promise<GenerateCalldataResponse> {
+    try {
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
+        routes.generateCalldata,
+        {
+          id: "ID",
+          action: "BUILD",
+          params: {
+            id: ActionNameToId.send,
+            chainId: chainId,
+            consoleAddress: accountAddress,
+            params,
+          },
+        } as GeneratePayload<SendParams, "BUILD">
+      );
+
+      return response.data;
+    } catch (err: any) {
+      console.error(`Error generating calldata: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async swap(
+    chainId: number,
+    accountAddress: Address,
+    params: SwapParams
+  ): Promise<GenerateCalldataResponse> {
+    try {
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
+        routes.generateCalldata,
+        {
+          id: "ID",
+          action: "BUILD",
+          params: {
+            id: ActionNameToId.swap,
+            chainId: chainId,
+            consoleAddress: accountAddress,
+            params,
+          },
+        } as GeneratePayload<SwapParams, "BUILD">
+      );
+
+      return response.data;
+    } catch (err: any) {
+      console.error(`Error generating calldata: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async getSwapRoutes(
+    fromAssetAddress: Address,
+    toAssetAddress: Address,
+    ownerAddress: Address,
+    fromAmount: string,
+    slippage: string,
+    chainId: number
+  ): Promise<SwapQuoteRoutes> {
+    const requestData = {
+      chainId,
+      fromAssetAddress,
+      toAssetAddress,
+      ownerAddress,
+      fromAmount,
+      slippage,
+    };
+
+    try {
+      const params = new URLSearchParams();
+      Object.entries(requestData).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => params.append(key, v));
+        } else {
+          params.set(key, value.toString());
+        }
+      });
+      const queryString = params.toString();
+
+      const response = await this.axiosInstance.get<SwapQuoteRoutes["data"]>(
+        `${routes.swapRoutes}?${queryString}`
+      );
+
+      return { data: response.data, error: undefined };
+    } catch (err: any) {
+      const error = err as AxiosError<{ message: string }>;
+
+      return {
+        data: [],
+        error: error.response?.data?.message ?? error.message,
+      };
+    }
+  }
+
+  async fetchBridgingRoutes(
+    params: GetBridgingRoutes
+  ): Promise<GetRoutingResponse> {
+    try {
+      const query = new URLSearchParams({
+        chainIdIn: params.chainIdIn.toString(),
+        chainIdOut: params.chainIdOut.toString(),
+        tokenIn: params.tokenIn,
+        tokenOut: params.tokenOut,
+        amountIn: params.amountIn.toString(),
+        amountOut: params.amountOut.toString(),
+        slippage: params.slippage.toString(),
+        ownerAddress: params.ownerAddress,
+        recipient: params.recipient,
+      }).toString();
+
+      const url = `${routes.fetchBridgingRoutes}?${query}`;
+      const response = await this.axiosInstance.get<GetRoutingResponse>(url);
+      return response.data || [];
+    } catch (err: any) {
+      console.error(`Error fetching bridging routes: ${err.message}`);
+      return [];
+    }
+  }
+
+  async fetchBridgingStatus(
+    txnHash: Address,
+    pid: number,
+    fromChainId: number,
+    toChainId: number
+  ): Promise<GetBridgingStatus | null> {
+    try {
+      const queryParams = new URLSearchParams({
+        pid: pid.toString(),
+        transactionHash: txnHash,
+        fromChainId: fromChainId.toString(),
+        toChainId: toChainId.toString(),
+      });
+
+      const response = await this.axiosInstance.get<GetBridgingStatus>(
+        `${routes.fetchBridgingStatus}?${queryParams.toString()}`
+      );
+      return response.data;
+    } catch (err: any) {
+      return null;
+    }
+  }
+
+  async bridge(
+    chainId: number,
+    accountAddress: Address,
+    params: BridgeParams
+  ): Promise<GenerateCalldataResponse> {
+    try {
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
+        routes.generateCalldata,
+        {
+          id: "ID",
+          action: "BUILD",
+          params: {
+            id: ActionNameToId.bridging,
+            chainId: chainId,
+            consoleAddress: accountAddress,
+            params,
+          },
+        } as GeneratePayload<BridgeParams, "BUILD">
+      );
+
+      return response.data;
+    } catch (err: any) {
+      console.error(`Error generating calldata: ${err.message}`);
       throw err;
     }
   }
