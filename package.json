@@ -1,6 +1,6 @@
 {
   "name": "brahma-templates-sdk",
-  "version": "1.0.90",
+  "version": "1.0.91",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
