@@ -3,7 +3,7 @@ import {
   AutomationContextFetcher,
   BuilderCaller,
   PublicDeployer,
-  VendorCaller,
+  CoreActions,
 } from "./helpers";
 import { Communicator, Methods, UserClientFactory } from "./types";
 
@@ -15,7 +15,7 @@ export default class ConsoleKit {
   public automationContextFetcher: AutomationContextFetcher;
   public builderCaller: BuilderCaller;
   public publicDeployer: PublicDeployer;
-  public vendorCaller: VendorCaller;
+  public coreActions: CoreActions;
 
   constructor(apiKey: string, baseURL: string) {
     if (!apiKey) {
@@ -36,7 +36,7 @@ export default class ConsoleKit {
       this.apiKey,
       this.baseURL
     );
-    this.vendorCaller = new VendorCaller(this.apiKey, this.baseURL);
+    this.coreActions = new CoreActions(this.apiKey, this.baseURL);
   }
 
   async getClientFactory(): Promise<UserClientFactory> {

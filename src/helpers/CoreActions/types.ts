@@ -1,5 +1,12 @@
 import { Address } from "viem";
-import { PathItem, SwapQuoteRoute, TAsset, TxBuildObject } from "@/types";
+import { TAsset } from "@/types";
+
+export type Account = {
+  consoleAddress: Address;
+  eoa: Address;
+  chainId: number;
+  createdAt: string;
+};
 
 type ActionType = "SUBSCRIBE" | "UPDATE" | "CANCEL" | "BUILD";
 
@@ -79,4 +86,73 @@ export type BridgeParams = {
   route: BridgingRoute;
   recipient: Address;
   ownerAddress: Address;
+};
+
+export type SwapQuoteRoute = {
+  pid: number;
+  dex: string;
+  toAmount: string;
+};
+
+export type SwapQuoteRoutes = {
+  data: SwapQuoteRoute[];
+  error?: string;
+};
+
+export type GetBridgingRoutes = {
+  chainIdIn: number;
+  chainIdOut: number;
+  tokenIn: string;
+  tokenOut: string;
+  amountIn: string;
+  amountOut: string;
+  slippage: number;
+  ownerAddress: string;
+  recipient: Address;
+};
+
+type Protocol = {
+  icon: string;
+  name: string;
+};
+
+export type PathItem = {
+  fromAmount: string;
+  fromChainId: number;
+  fromTokenAddress: string;
+  pathAction: "bridge" | "swap";
+  protocol: Protocol;
+  toAmount: string;
+  toChainId: number;
+  toTokenAddress: string;
+};
+
+export type TxBuildObject = {
+  fromAmount: string;
+  inputValueInUsd: number;
+  outputValueInUsd: number;
+  receivedValueInUsd: number;
+  recipient: string;
+  routeId: string;
+  sender: string;
+  serviceTime: number;
+  toAmount: string;
+  totalGasFeesInUsd: number;
+};
+
+export type GetRoutingResponse = {
+  duration: number;
+  pathItems: PathItem[];
+  pid: number;
+  toAmount: string;
+  txBuildObject: TxBuildObject;
+}[];
+
+export type BridgingChainStatus = "pending" | "success" | "failed" | "invalid";
+
+export type GetBridgingStatus = {
+  destinationStatus: BridgingChainStatus;
+  destinationTransactionHash: Address;
+  sourceStatus: BridgingChainStatus;
+  sourceTransactionHash: Address;
 };

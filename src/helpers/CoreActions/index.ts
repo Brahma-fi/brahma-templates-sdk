@@ -1,15 +1,20 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance } from "axios";
 import { Address } from "viem";
 
 import routes from "@/routes";
 
 import {
+  Account,
   ActionNameToId,
   BridgeParams,
   GenerateCalldataResponse,
   GeneratePayload,
+  GetBridgingRoutes,
+  GetBridgingStatus,
+  GetRoutingResponse,
   SendParams,
   SwapParams,
+  SwapQuoteRoutes,
 } from "./types";
 
 export class CoreActions {
@@ -102,6 +107,118 @@ export class CoreActions {
     } catch (err: any) {
       console.error(`Error generating calldata: ${err.message}`);
       throw err;
+    }
+  }
+
+  async fetchExistingAccounts(eoa: Address): Promise<Account[]> {
+    try {
+      if (!eoa) {
+        throw new Error("EOA (Externally Owned Account) is required");
+      }
+
+      const response = await this.axiosInstance.get<{ data: Account[] }>(
+        `${routes.fetchExistingAccounts}/${eoa}`
+      );
+
+      if (!response.data.data) {
+        throw new Error("No accounts found for the given EOA");
+      }
+
+      return response.data.data;
+    } catch (err: any) {
+      console.error(`Error fetching existing accounts: ${err.message}`);
+      return [];
+    }
+  }
+
+  async getSwapRoutes(
+    fromAssetAddress: Address,
+    toAssetAddress: Address,
+    ownerAddress: Address,
+    fromAmount: string,
+    slippage: string,
+    chainId: number
+  ): Promise<SwapQuoteRoutes> {
+    const requestData = {
+      chainId,
+      fromAssetAddress,
+      toAssetAddress,
+      ownerAddress,
+      fromAmount,
+      slippage,
+    };
+
+    try {
+      const params = new URLSearchParams();
+      Object.entries(requestData).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => params.append(key, v));
+        } else {
+          params.set(key, value.toString());
+        }
+      });
+      const queryString = params.toString();
+
+      const response = await this.axiosInstance.get<SwapQuoteRoutes["data"]>(
+        `${routes.swapRoutes}?${queryString}`
+      );
+
+      return { data: response.data, error: undefined };
+    } catch (err: any) {
+      const error = err as AxiosError<{ message: string }>;
+
+      return {
+        data: [],
+        error: error.response?.data?.message ?? error.message,
+      };
+    }
+  }
+
+  async fetchBridgingRoutes(
+    params: GetBridgingRoutes
+  ): Promise<GetRoutingResponse> {
+    try {
+      const query = new URLSearchParams({
+        chainIdIn: params.chainIdIn.toString(),
+        chainIdOut: params.chainIdOut.toString(),
+        tokenIn: params.tokenIn,
+        tokenOut: params.tokenOut,
+        amountIn: params.amountIn.toString(),
+        amountOut: params.amountOut.toString(),
+        slippage: params.slippage.toString(),
+        ownerAddress: params.ownerAddress,
+        recipient: params.recipient,
+      }).toString();
+
+      const url = `${routes.fetchBridgingRoutes}?${query}`;
+      const response = await this.axiosInstance.get<GetRoutingResponse>(url);
+      return response.data || [];
+    } catch (err: any) {
+      console.error(`Error fetching bridging routes: ${err.message}`);
+      return [];
+    }
+  }
+
+  async fetchBridgingStatus(
+    txnHash: Address,
+    pid: number,
+    fromChainId: number,
+    toChainId: number
+  ): Promise<GetBridgingStatus | null> {
+    try {
+      const queryParams = new URLSearchParams({
+        pid: pid.toString(),
+        transactionHash: txnHash,
+        fromChainId: fromChainId.toString(),
+        toChainId: toChainId.toString(),
+      });
+
+      const response = await this.axiosInstance.get<GetBridgingStatus>(
+        `${routes.fetchBridgingStatus}?${queryParams.toString()}`
+      );
+      return response.data;
+    } catch (err: any) {
+      return null;
     }
   }
 }
