@@ -145,26 +145,6 @@ export class AutomationContext {
     }
   }
 
-  async indexTransaction(
-    transactionHash: string,
-    chainID: number
-  ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `${routes.indexTransaction}/${transactionHash}/${chainID}`
-      );
-
-      if (response.status !== 204) {
-        throw new Error("Failed to index transaction");
-      }
-
-      console.log("Transaction indexed successfully");
-    } catch (err: any) {
-      console.error(`Error indexing transaction: ${err.message}`);
-      throw err;
-    }
-  }
-
   async fetchTasks(
     registryId: string,
     cursor: number = 0,
