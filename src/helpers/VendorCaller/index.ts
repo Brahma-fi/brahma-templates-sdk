@@ -24,11 +24,11 @@ import {
   GetBridgingRoutes,
   GetRoutingResponse,
   GetBridgingStatus,
-  BridgeParams,
+  BridgeParams
 } from "./types";
 import {
   AutomationLogResponse,
-  AutomationSubscription,
+  AutomationSubscription
 } from "../AutomationContextFetcher/types";
 
 const routes = {
@@ -48,7 +48,7 @@ const routes = {
 
   // bridge
   fetchBridgingRoutes: "/builder/bridge/routes",
-  fetchBridgingStatus: "/builder/bridge/status",
+  fetchBridgingStatus: "/builder/bridge/status"
 };
 
 export class VendorCaller {
@@ -58,8 +58,8 @@ export class VendorCaller {
     this.axiosInstance = axios.create({
       baseURL,
       headers: {
-        "x-api-key": apiKey,
-      },
+        "x-api-key": apiKey
+      }
     });
   }
 
@@ -93,7 +93,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "SUBSCRIBE",
-          params,
+          params
         } as GeneratePayload<SubscribeAutomationParams, "SUBSCRIBE">
       );
 
@@ -113,7 +113,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "UPDATE",
-          params,
+          params
         } as GeneratePayload<UpdateAutomationParams, "UPDATE">
       );
 
@@ -133,7 +133,7 @@ export class VendorCaller {
         {
           id: "AUTOMATION",
           action: "CANCEL",
-          params,
+          params
         } as GeneratePayload<VendorCancelAutomationParams, "CANCEL">
       );
 
@@ -222,7 +222,7 @@ export class VendorCaller {
       const response = await this.axiosInstance.get<TaskResponse>(
         `${routes.kernelTasks}/${registryId}`,
         {
-          params: { cursor, limit },
+          params: { cursor, limit }
         }
       );
 
@@ -289,18 +289,18 @@ export class VendorCaller {
           { name: "registryId", type: "string" },
           { name: "type", type: "string" },
           { name: "ttl", type: "string" },
-          { name: "enable", type: "bool" },
-        ],
+          { name: "enable", type: "bool" }
+        ]
       },
       domain: {
-        chainId: chainId,
+        chainId: chainId
       },
       message: {
         registryId: registryId,
         type: config.type,
         ttl: config.executionTTL,
-        enable: true,
-      },
+        enable: true
+      }
     };
   }
 
@@ -312,7 +312,7 @@ export class VendorCaller {
     const payload = {
       registryId,
       signature,
-      config,
+      config
     };
 
     try {
@@ -343,18 +343,18 @@ export class VendorCaller {
           { name: "feeToken", type: "address" },
           { name: "feeReceiver", type: "address" },
           { name: "limitPerExecution", type: "bool" },
-          { name: "clientId", type: "string" },
-        ],
+          { name: "clientId", type: "string" }
+        ]
       },
       domain: {
-        chainId: chainId,
+        chainId: chainId
       },
       message: {
         ...config,
         feeInBPS: 0,
-        feeToken: "0x0000000000000000000000000000000000000000",
+        feeToken: "0x0000000000000000000000000000000000000000"
       },
-      primaryType: "RegisterExecutor",
+      primaryType: "RegisterExecutor"
     };
   }
 
@@ -373,7 +373,7 @@ export class VendorCaller {
         feeInBPS: 0,
         feeToken: "0x0000000000000000000000000000000000000000",
         feeReceiver: config.feeReceiver,
-        limitPerExecution: config.limitPerExecution,
+        limitPerExecution: config.limitPerExecution
       },
       executor: config.executor,
       signature: signature,
@@ -383,8 +383,8 @@ export class VendorCaller {
         id: config.clientId,
         name: name,
         logo: logo,
-        metadata: metadata,
-      },
+        metadata: metadata
+      }
     };
 
     try {
@@ -418,15 +418,15 @@ export class VendorCaller {
           { name: "safeTxGas", type: "uint256" },
           { name: "baseGas", type: "uint256" },
           { name: "gasPrice", type: "uint256" },
-          { name: "data", type: "bytes" },
-        ],
+          { name: "data", type: "bytes" }
+        ]
       },
       primaryType: "ExecutionParams",
       domain: {
         name: "ExecutorPlugin",
         version: "1.0",
         chainId: params.chainId,
-        verifyingContract: params.pluginAddress,
+        verifyingContract: params.pluginAddress
       },
       message: {
         operation: params.operation,
@@ -440,8 +440,8 @@ export class VendorCaller {
         refundReceiver: "0x0000000000000000000000000000000000000000", // Default value
         safeTxGas: "0", // Default value
         baseGas: "0", // Default value
-        gasPrice: "0", // Default value
-      },
+        gasPrice: "0" // Default value
+      }
     };
   }
 
@@ -500,14 +500,14 @@ export class VendorCaller {
       const response = await this.axiosInstance.post<GenerateCalldataResponse>(
         routes.generateCalldata,
         {
-          id: "ID",
+          id: "INTENT",
           action: "BUILD",
           params: {
             id: ActionNameToId.send,
             chainId: chainId,
             consoleAddress: accountAddress,
-            params,
-          },
+            params
+          }
         } as GeneratePayload<SendParams, "BUILD">
       );
 
@@ -527,14 +527,14 @@ export class VendorCaller {
       const response = await this.axiosInstance.post<GenerateCalldataResponse>(
         routes.generateCalldata,
         {
-          id: "ID",
+          id: "INTENT",
           action: "BUILD",
           params: {
             id: ActionNameToId.swap,
             chainId: chainId,
             consoleAddress: accountAddress,
-            params,
-          },
+            params
+          }
         } as GeneratePayload<SwapParams, "BUILD">
       );
 
@@ -559,7 +559,7 @@ export class VendorCaller {
       toAssetAddress,
       ownerAddress,
       fromAmount,
-      slippage,
+      slippage
     };
 
     try {
@@ -583,7 +583,7 @@ export class VendorCaller {
 
       return {
         data: [],
-        error: error.response?.data?.message ?? error.message,
+        error: error.response?.data?.message ?? error.message
       };
     }
   }
@@ -601,7 +601,7 @@ export class VendorCaller {
         amountOut: params.amountOut.toString(),
         slippage: params.slippage.toString(),
         ownerAddress: params.ownerAddress,
-        recipient: params.recipient,
+        recipient: params.recipient
       }).toString();
 
       const url = `${routes.fetchBridgingRoutes}?${query}`;
@@ -624,7 +624,7 @@ export class VendorCaller {
         pid: pid.toString(),
         transactionHash: txnHash,
         fromChainId: fromChainId.toString(),
-        toChainId: toChainId.toString(),
+        toChainId: toChainId.toString()
       });
 
       const response = await this.axiosInstance.get<GetBridgingStatus>(
@@ -645,14 +645,14 @@ export class VendorCaller {
       const response = await this.axiosInstance.post<GenerateCalldataResponse>(
         routes.generateCalldata,
         {
-          id: "ID",
+          id: "INTENT",
           action: "BUILD",
           params: {
             id: ActionNameToId.bridging,
             chainId: chainId,
             consoleAddress: accountAddress,
-            params,
-          },
+            params
+          }
         } as GeneratePayload<BridgeParams, "BUILD">
       );
 
