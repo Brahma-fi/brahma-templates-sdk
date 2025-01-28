@@ -20,52 +20,63 @@ export class AutomationContextFetcher {
     });
   }
 
-  async fetchAutomationLogs(
-    automationId: string
-  ): Promise<AutomationLogResponse[]> {
+  async subscribeToAutomation(
+    params: SubscribeAutomationParams
+  ): Promise<GenerateCalldataResponse> {
     try {
-      if (!automationId) {
-        throw new Error("Automation ID is required");
-      }
-
-      const response = await this.axiosInstance.get(
-        `${routes.fetchAutomationLogs}/${automationId}`
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
+        routes.generateCalldata,
+        {
+          id: "AUTOMATION",
+          action: "SUBSCRIBE",
+          params,
+        } as GeneratePayload<SubscribeAutomationParams, "SUBSCRIBE">
       );
-
-      if (!response.data.data) {
-        throw new Error("No logs found for the given automation ID");
-      }
-
-      return response.data.data;
-    } catch (err: any) {
-      console.error(`Error fetching automation logs: ${err.message}`);
-      return [];
-    }
-  }
-
-  async fetchAutomationSubscriptions(
-    accountAddress: Address,
-    chainId: number
-  ): Promise<AutomationSubscription[]> {
-    try {
-      if (!accountAddress || !chainId) {
-        throw new Error("Brahma Account address and chain ID are required");
-      }
-
-      const response = await this.axiosInstance.get(
-        `${routes.fetchAutomationSubscriptions}/${accountAddress}/${chainId}`
-      );
-
-      if (!response.data.data) {
-        throw new Error(
-          "No subscriptions found for the given account address and chain ID"
-        );
-      }
 
       return response.data;
     } catch (err: any) {
-      console.error(`Error fetching automation subscriptions: ${err.message}`);
-      return [];
+      console.error(`Error subscribing to automation: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async updateAutomation(
+    params: UpdateAutomationParams
+  ): Promise<GenerateCalldataResponse> {
+    try {
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
+        routes.generateCalldata,
+        {
+          id: "AUTOMATION",
+          action: "UPDATE",
+          params,
+        } as GeneratePayload<UpdateAutomationParams, "UPDATE">
+      );
+
+      return response.data;
+    } catch (err: any) {
+      console.error(`Error updating automation: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async cancelAutomation(
+    params: VendorCancelAutomationParams
+  ): Promise<GenerateCalldataResponse> {
+    try {
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
+        routes.generateCalldata,
+        {
+          id: "AUTOMATION",
+          action: "CANCEL",
+          params,
+        } as GeneratePayload<VendorCancelAutomationParams, "CANCEL">
+      );
+
+      return response.data;
+    } catch (err: any) {
+      console.error(`Error updating automation: ${err.message}`);
+      throw err;
     }
   }
 }

@@ -8,90 +8,6 @@ export type Account = {
   createdAt: string;
 };
 
-type ActionType = "SUBSCRIBE" | "UPDATE" | "CANCEL" | "BUILD";
-
-export type GenerateCalldataResponse = {
-  data: {
-    transactions: {
-      to: Address;
-      data: string;
-      value: string;
-      operation: number;
-    }[];
-    metadata: any | null;
-  };
-};
-
-export enum ActionNameToId {
-  send = 301,
-  swap = 309,
-  bridging = 326
-}
-
-export type GeneratePayload<T, A extends ActionType> = A extends "BUILD"
-  ? {
-      id: string;
-      action: "BUILD";
-      params: {
-        id: ActionNameToId;
-        chainId: number;
-        consoleAddress: Address;
-        params: T;
-      };
-    }
-  : {
-      id: "AUTOMATION";
-      action: A;
-      params: T;
-    };
-
-export type SubscribeAutomationParams = {
-  chainId: number;
-  data: {
-    metadata: Record<string, any>;
-    duration: number;
-    tokenInputs: Record<string, string>;
-    tokenLimits: Record<string, string>;
-    registryID: string;
-    chainId: number;
-    ownerAddress: string;
-  };
-};
-
-export type UpdateAutomationParams = {
-  subAccountAddress: Address;
-  chainId: number;
-  data: {
-    sweepTokens: string[];
-    execViaSubAcc: {
-      to: Address;
-      value: string;
-      data: string;
-    }[];
-    metadata: Record<string, any>;
-    duration: number;
-    tokenInputs: Record<string, string>;
-    tokenLimits: Record<string, string>;
-    registryID: string;
-    chainId: number;
-    ownerAddress: Address;
-  };
-};
-
-export type VendorCancelAutomationParams = {
-  subAccountAddress: Address;
-  chainId: number;
-  data: {
-    sweepTokens?: string[];
-    execViaSubAcc: {
-      to: Address;
-      value: string;
-      data: string;
-    }[];
-    ownerConsole: Address;
-  };
-};
-
 export type Task = {
   id: string;
   payload: {
@@ -235,7 +151,7 @@ export enum WorkflowExecutionStatus {
   CANCELED = 4,
   TERMINATED = 5,
   CONTINUED_AS_NEW = 6,
-  TIMED_OUT = 7
+  TIMED_OUT = 7,
 }
 
 export type WorkflowStateResponse = {
@@ -251,25 +167,10 @@ export type WorkflowStateResponse = {
   } | null;
 };
 
-export type SendParams = {
-  to: Address;
-  amount: string;
-  tokenAddress: Address;
-};
-
 export type SwapQuoteRoute = {
   pid: number;
   dex: string;
   toAmount: string;
-};
-
-export type SwapParams = {
-  amountIn: string;
-  tokenIn: Address;
-  tokenOut: Address;
-  slippage: number;
-  chainId: number;
-  route: SwapQuoteRoute;
 };
 
 export type SwapQuoteRoutes = {
@@ -294,7 +195,7 @@ type Protocol = {
   name: string;
 };
 
-type PathItem = {
+export type PathItem = {
   fromAmount: string;
   fromChainId: number;
   fromTokenAddress: string;
@@ -305,15 +206,7 @@ type PathItem = {
   toTokenAddress: string;
 };
 
-export type GetRoutingResponse = {
-  duration: number;
-  pathItems: PathItem[];
-  pid: number;
-  toAmount: string;
-  txBuildObject: TxBuildObject;
-}[];
-
-type TxBuildObject = {
+export type TxBuildObject = {
   fromAmount: string;
   inputValueInUsd: number;
   outputValueInUsd: number;
@@ -326,6 +219,14 @@ type TxBuildObject = {
   totalGasFeesInUsd: number;
 };
 
+export type GetRoutingResponse = {
+  duration: number;
+  pathItems: PathItem[];
+  pid: number;
+  toAmount: string;
+  txBuildObject: TxBuildObject;
+}[];
+
 export type BridgingChainStatus = "pending" | "success" | "failed" | "invalid";
 
 export type GetBridgingStatus = {
@@ -333,35 +234,4 @@ export type GetBridgingStatus = {
   destinationTransactionHash: Address;
   sourceStatus: BridgingChainStatus;
   sourceTransactionHash: Address;
-};
-
-export type BridgingRoute = {
-  uuid: string;
-  pid: number;
-  protocolIcon: string;
-  protocolName: string;
-  routePercentageChange: string;
-  isBestRoute: boolean;
-  tokenOut: TAsset;
-  tokenOutAmount: string;
-  tokenOutAmountInUSD: string;
-  gasUsed: string;
-  serviceTime: number;
-  txBuildObject: TxBuildObject;
-  pathItems: PathItem[];
-  bridge: string | null;
-};
-
-export type BridgeParams = {
-  chainIdIn: number;
-  chainIdOut: number;
-  tokenIn: Address;
-  tokenOut: Address;
-  tokenOutName: string;
-  amountIn: string;
-  amount: string;
-  amountOut: string;
-  route: BridgingRoute;
-  recipient: Address;
-  ownerAddress: Address;
 };

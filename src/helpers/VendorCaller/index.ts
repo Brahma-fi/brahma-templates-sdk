@@ -2,54 +2,26 @@ import axios, { AxiosError, AxiosInstance } from "axios";
 import { Address } from "viem";
 import {
   Account,
-  VendorCancelAutomationParams,
   SubmitTaskRequest,
   SubmitTaskResponse,
-  SubscribeAutomationParams,
   Task,
   TaskResponse,
-  UpdateAutomationParams,
   ExecutorDetails,
   KernelExecutorConfig,
   ConsoleExecutorConfig,
   GenerateExecutableTypedDataParams,
   ConsoleExecutorPayload,
   WorkflowStateResponse,
-  GeneratePayload,
-  GenerateCalldataResponse,
-  SendParams,
-  ActionNameToId,
-  SwapParams,
   SwapQuoteRoutes,
   GetBridgingRoutes,
   GetRoutingResponse,
   GetBridgingStatus,
-  BridgeParams
 } from "./types";
 import {
   AutomationLogResponse,
-  AutomationSubscription
+  AutomationSubscription,
 } from "../AutomationContextFetcher/types";
-
-const routes = {
-  fetchExistingAccounts: "/user/consoles",
-  generateCalldata: "/builder/generate",
-  fetchAutomationSubscriptions: "/automations/subscriptions/console",
-  fetchAutomationLogs: "/kernel/logs",
-  indexTransaction: "/indexer/process",
-  kernelTasks: "/kernel/tasks",
-  kernelExecutor: "/kernel/executor",
-  automationsExecutor: "/automations/executor",
-  executorNonce: "/automations/executor/nonce",
-  workflowStatus: "/kernel/tasks/status",
-
-  // swap
-  swapRoutes: "/builder/swap/routes",
-
-  // bridge
-  fetchBridgingRoutes: "/builder/bridge/routes",
-  fetchBridgingStatus: "/builder/bridge/status"
-};
+import routes from "@/routes";
 
 export class VendorCaller {
   private readonly axiosInstance: AxiosInstance;
@@ -58,11 +30,12 @@ export class VendorCaller {
     this.axiosInstance = axios.create({
       baseURL,
       headers: {
-        "x-api-key": apiKey
-      }
+        "x-api-key": apiKey,
+      },
     });
   }
 
+  // core
   async fetchExistingAccounts(eoa: Address): Promise<Account[]> {
     try {
       if (!eoa) {
@@ -81,66 +54,6 @@ export class VendorCaller {
     } catch (err: any) {
       console.error(`Error fetching existing accounts: ${err.message}`);
       return [];
-    }
-  }
-
-  async subscribeToAutomation(
-    params: SubscribeAutomationParams
-  ): Promise<GenerateCalldataResponse> {
-    try {
-      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
-        routes.generateCalldata,
-        {
-          id: "AUTOMATION",
-          action: "SUBSCRIBE",
-          params
-        } as GeneratePayload<SubscribeAutomationParams, "SUBSCRIBE">
-      );
-
-      return response.data;
-    } catch (err: any) {
-      console.error(`Error subscribing to automation: ${err.message}`);
-      throw err;
-    }
-  }
-
-  async updateAutomation(
-    params: UpdateAutomationParams
-  ): Promise<GenerateCalldataResponse> {
-    try {
-      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
-        routes.generateCalldata,
-        {
-          id: "AUTOMATION",
-          action: "UPDATE",
-          params
-        } as GeneratePayload<UpdateAutomationParams, "UPDATE">
-      );
-
-      return response.data;
-    } catch (err: any) {
-      console.error(`Error updating automation: ${err.message}`);
-      throw err;
-    }
-  }
-
-  async cancelAutomation(
-    params: VendorCancelAutomationParams
-  ): Promise<GenerateCalldataResponse> {
-    try {
-      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
-        routes.generateCalldata,
-        {
-          id: "AUTOMATION",
-          action: "CANCEL",
-          params
-        } as GeneratePayload<VendorCancelAutomationParams, "CANCEL">
-      );
-
-      return response.data;
-    } catch (err: any) {
-      console.error(`Error updating automation: ${err.message}`);
-      throw err;
     }
   }
 
@@ -222,7 +135,7 @@ export class VendorCaller {
       const response = await this.axiosInstance.get<TaskResponse>(
         `${routes.kernelTasks}/${registryId}`,
         {
-          params: { cursor, limit }
+          params: { cursor, limit },
         }
       );
 
@@ -237,6 +150,7 @@ export class VendorCaller {
     }
   }
 
+  // ac
   async submitTask(
     taskRequest: SubmitTaskRequest
   ): Promise<SubmitTaskResponse> {
@@ -257,6 +171,7 @@ export class VendorCaller {
     }
   }
 
+  // ac
   async fetchExecutorDetails(registryId: string): Promise<ExecutorDetails> {
     try {
       if (!registryId) {
@@ -278,6 +193,7 @@ export class VendorCaller {
     }
   }
 
+  // ac
   async generateKernelExecutorRegistration712Message(
     chainId: number,
     registryId: string,
@@ -289,21 +205,22 @@ export class VendorCaller {
           { name: "registryId", type: "string" },
           { name: "type", type: "string" },
           { name: "ttl", type: "string" },
-          { name: "enable", type: "bool" }
-        ]
+          { name: "enable", type: "bool" },
+        ],
       },
       domain: {
-        chainId: chainId
+        chainId: chainId,
       },
       message: {
         registryId: registryId,
         type: config.type,
         ttl: config.executionTTL,
-        enable: true
-      }
+        enable: true,
+      },
     };
   }
 
+  // ac
   async registerExecutorOnKernel(
     registryId: string,
     signature: string,
@@ -312,7 +229,7 @@ export class VendorCaller {
     const payload = {
       registryId,
       signature,
-      config
+      config,
     };
 
     try {
@@ -328,6 +245,7 @@ export class VendorCaller {
     }
   }
 
+  // ac
   async generateConsoleExecutorRegistration712Message(
     chainId: number,
     config: ConsoleExecutorConfig
@@ -343,21 +261,22 @@ export class VendorCaller {
           { name: "feeToken", type: "address" },
           { name: "feeReceiver", type: "address" },
           { name: "limitPerExecution", type: "bool" },
-          { name: "clientId", type: "string" }
-        ]
+          { name: "clientId", type: "string" },
+        ],
       },
       domain: {
-        chainId: chainId
+        chainId: chainId,
       },
       message: {
         ...config,
         feeInBPS: 0,
-        feeToken: "0x0000000000000000000000000000000000000000"
+        feeToken: "0x0000000000000000000000000000000000000000",
       },
-      primaryType: "RegisterExecutor"
+      primaryType: "RegisterExecutor",
     };
   }
 
+  // ac
   async registerExecutorOnConsole(
     signature: string,
     chainId: number,
@@ -373,7 +292,7 @@ export class VendorCaller {
         feeInBPS: 0,
         feeToken: "0x0000000000000000000000000000000000000000",
         feeReceiver: config.feeReceiver,
-        limitPerExecution: config.limitPerExecution
+        limitPerExecution: config.limitPerExecution,
       },
       executor: config.executor,
       signature: signature,
@@ -383,8 +302,8 @@ export class VendorCaller {
         id: config.clientId,
         name: name,
         logo: logo,
-        metadata: metadata
-      }
+        metadata: metadata,
+      },
     };
 
     try {
@@ -401,6 +320,7 @@ export class VendorCaller {
     }
   }
 
+  // ac
   async generateExecutableDigest712Message(
     params: GenerateExecutableTypedDataParams
   ) {
@@ -418,15 +338,15 @@ export class VendorCaller {
           { name: "safeTxGas", type: "uint256" },
           { name: "baseGas", type: "uint256" },
           { name: "gasPrice", type: "uint256" },
-          { name: "data", type: "bytes" }
-        ]
+          { name: "data", type: "bytes" },
+        ],
       },
       primaryType: "ExecutionParams",
       domain: {
         name: "ExecutorPlugin",
         version: "1.0",
         chainId: params.chainId,
-        verifyingContract: params.pluginAddress
+        verifyingContract: params.pluginAddress,
       },
       message: {
         operation: params.operation,
@@ -440,11 +360,12 @@ export class VendorCaller {
         refundReceiver: "0x0000000000000000000000000000000000000000", // Default value
         safeTxGas: "0", // Default value
         baseGas: "0", // Default value
-        gasPrice: "0" // Default value
-      }
+        gasPrice: "0", // Default value
+      },
     };
   }
 
+  // ac
   async fetchExecutorNonce(
     automationAccount: Address,
     executor: Address,
@@ -470,6 +391,7 @@ export class VendorCaller {
     }
   }
 
+  // ac
   async fetchWorkflowState(taskId: string) {
     try {
       if (!taskId || taskId === "") {
@@ -491,60 +413,6 @@ export class VendorCaller {
     }
   }
 
-  async send(
-    chainId: number,
-    accountAddress: Address,
-    params: SendParams
-  ): Promise<GenerateCalldataResponse> {
-    try {
-      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
-        routes.generateCalldata,
-        {
-          id: "INTENT",
-          action: "BUILD",
-          params: {
-            id: ActionNameToId.send,
-            chainId: chainId,
-            consoleAddress: accountAddress,
-            params
-          }
-        } as GeneratePayload<SendParams, "BUILD">
-      );
-
-      return response.data;
-    } catch (err: any) {
-      console.error(`Error generating calldata: ${err.message}`);
-      throw err;
-    }
-  }
-
-  async swap(
-    chainId: number,
-    accountAddress: Address,
-    params: SwapParams
-  ): Promise<GenerateCalldataResponse> {
-    try {
-      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
-        routes.generateCalldata,
-        {
-          id: "INTENT",
-          action: "BUILD",
-          params: {
-            id: ActionNameToId.swap,
-            chainId: chainId,
-            consoleAddress: accountAddress,
-            params
-          }
-        } as GeneratePayload<SwapParams, "BUILD">
-      );
-
-      return response.data;
-    } catch (err: any) {
-      console.error(`Error generating calldata: ${err.message}`);
-      throw err;
-    }
-  }
-
   async getSwapRoutes(
     fromAssetAddress: Address,
     toAssetAddress: Address,
@@ -559,7 +427,7 @@ export class VendorCaller {
       toAssetAddress,
       ownerAddress,
       fromAmount,
-      slippage
+      slippage,
     };
 
     try {
@@ -583,7 +451,7 @@ export class VendorCaller {
 
       return {
         data: [],
-        error: error.response?.data?.message ?? error.message
+        error: error.response?.data?.message ?? error.message,
       };
     }
   }
@@ -601,7 +469,7 @@ export class VendorCaller {
         amountOut: params.amountOut.toString(),
         slippage: params.slippage.toString(),
         ownerAddress: params.ownerAddress,
-        recipient: params.recipient
+        recipient: params.recipient,
       }).toString();
 
       const url = `${routes.fetchBridgingRoutes}?${query}`;
@@ -624,7 +492,7 @@ export class VendorCaller {
         pid: pid.toString(),
         transactionHash: txnHash,
         fromChainId: fromChainId.toString(),
-        toChainId: toChainId.toString()
+        toChainId: toChainId.toString(),
       });
 
       const response = await this.axiosInstance.get<GetBridgingStatus>(
@@ -633,33 +501,6 @@ export class VendorCaller {
       return response.data;
     } catch (err: any) {
       return null;
-    }
-  }
-
-  async bridge(
-    chainId: number,
-    accountAddress: Address,
-    params: BridgeParams
-  ): Promise<GenerateCalldataResponse> {
-    try {
-      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
-        routes.generateCalldata,
-        {
-          id: "INTENT",
-          action: "BUILD",
-          params: {
-            id: ActionNameToId.bridging,
-            chainId: chainId,
-            consoleAddress: accountAddress,
-            params
-          }
-        } as GeneratePayload<BridgeParams, "BUILD">
-      );
-
-      return response.data;
-    } catch (err: any) {
-      console.error(`Error generating calldata: ${err.message}`);
-      throw err;
     }
   }
 }
