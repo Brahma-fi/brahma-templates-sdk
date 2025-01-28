@@ -60,19 +60,13 @@ export type SwapParams = {
   route: SwapQuoteRoute;
 };
 
-export type BridgingRoute = {
-  uuid: string;
+export type BridgeRoute = {
   pid: number;
-  protocolIcon: string;
-  protocolName: string;
-  routePercentageChange: string;
-  isBestRoute: boolean;
-  tokenOut: TAsset;
-  tokenOutAmount: string;
-  tokenOutAmountInUSD: string;
-  gasUsed: string;
-  serviceTime: number;
+  priority: number;
   txBuildObject: TxBuildObject;
+  toAmount: string;
+  duration: number;
+  maxDuration: number;
   pathItems: PathItem[];
   bridge: string | null;
 };
@@ -82,10 +76,12 @@ export type BridgeParams = {
   chainIdOut: number;
   tokenIn: Address;
   tokenOut: Address;
-  amount: string;
-  route: BridgingRoute;
+  amountIn: string;
+  amountOut: string;
+  slippage: number;
   recipient: Address;
   ownerAddress: Address;
+  route: BridgeRoute;
 };
 
 export type SwapQuoteRoute = {
@@ -99,7 +95,7 @@ export type SwapQuoteRoutes = {
   error?: string;
 };
 
-export type GetBridgingRoutes = {
+export type GetBridgingRoutesParams = {
   chainIdIn: number;
   chainIdOut: number;
   tokenIn: string;
@@ -139,14 +135,6 @@ export type TxBuildObject = {
   toAmount: string;
   totalGasFeesInUsd: number;
 };
-
-export type GetRoutingResponse = {
-  duration: number;
-  pathItems: PathItem[];
-  pid: number;
-  toAmount: string;
-  txBuildObject: TxBuildObject;
-}[];
 
 export type BridgingChainStatus = "pending" | "success" | "failed" | "invalid";
 

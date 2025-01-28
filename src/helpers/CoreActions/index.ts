@@ -7,11 +7,11 @@ import {
   Account,
   ActionNameToId,
   BridgeParams,
+  BridgeRoute,
   GenerateCalldataResponse,
   GeneratePayload,
-  GetBridgingRoutes,
+  GetBridgingRoutesParams,
   GetBridgingStatus,
-  GetRoutingResponse,
   SendParams,
   SwapParams,
   SwapQuoteRoutes,
@@ -29,6 +29,29 @@ export class CoreActions {
     });
   }
 
+  // Get Existing Accounts of users
+  async fetchExistingAccounts(eoa: Address): Promise<Account[]> {
+    try {
+      if (!eoa) {
+        throw new Error("EOA (Externally Owned Account) is required");
+      }
+
+      const response = await this.axiosInstance.get<{ data: Account[] }>(
+        `${routes.fetchExistingAccounts}/${eoa}`
+      );
+
+      if (!response.data.data) {
+        throw new Error("No accounts found for the given EOA");
+      }
+
+      return response.data.data;
+    } catch (err: any) {
+      console.error(`Error fetching existing accounts: ${err.message}`);
+      return [];
+    }
+  }
+
+  // Send action
   async send(
     chainId: number,
     accountAddress: Address,
@@ -56,6 +79,7 @@ export class CoreActions {
     }
   }
 
+  // Swap action
   async swap(
     chainId: number,
     accountAddress: Address,
@@ -80,54 +104,6 @@ export class CoreActions {
     } catch (err: any) {
       console.error(`Error generating calldata: ${err.message}`);
       throw err;
-    }
-  }
-
-  async bridge(
-    chainId: number,
-    accountAddress: Address,
-    params: BridgeParams
-  ): Promise<GenerateCalldataResponse> {
-    try {
-      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
-        routes.generateCalldata,
-        {
-          id: "INTENT",
-          action: "BUILD",
-          params: {
-            id: ActionNameToId.bridging,
-            chainId: chainId,
-            consoleAddress: accountAddress,
-            params,
-          },
-        } as GeneratePayload<BridgeParams, "BUILD">
-      );
-
-      return response.data;
-    } catch (err: any) {
-      console.error(`Error generating calldata: ${err.message}`);
-      throw err;
-    }
-  }
-
-  async fetchExistingAccounts(eoa: Address): Promise<Account[]> {
-    try {
-      if (!eoa) {
-        throw new Error("EOA (Externally Owned Account) is required");
-      }
-
-      const response = await this.axiosInstance.get<{ data: Account[] }>(
-        `${routes.fetchExistingAccounts}/${eoa}`
-      );
-
-      if (!response.data.data) {
-        throw new Error("No accounts found for the given EOA");
-      }
-
-      return response.data.data;
-    } catch (err: any) {
-      console.error(`Error fetching existing accounts: ${err.message}`);
-      return [];
     }
   }
 
@@ -174,9 +150,37 @@ export class CoreActions {
     }
   }
 
+  // Bridge action
+  async bridge(
+    chainId: number,
+    accountAddress: Address,
+    params: BridgeParams
+  ): Promise<GenerateCalldataResponse> {
+    try {
+      const response = await this.axiosInstance.post<GenerateCalldataResponse>(
+        routes.generateCalldata,
+        {
+          id: "INTENT",
+          action: "BUILD",
+          params: {
+            id: ActionNameToId.bridging,
+            chainId: chainId,
+            consoleAddress: accountAddress,
+            params,
+          },
+        } as GeneratePayload<BridgeParams, "BUILD">
+      );
+
+      return response.data;
+    } catch (err: any) {
+      console.error(`Error generating calldata: ${err.message}`);
+      throw err;
+    }
+  }
+
   async fetchBridgingRoutes(
-    params: GetBridgingRoutes
-  ): Promise<GetRoutingResponse> {
+    params: GetBridgingRoutesParams
+  ): Promise<BridgeRoute[]> {
     try {
       const query = new URLSearchParams({
         chainIdIn: params.chainIdIn.toString(),
@@ -191,7 +195,7 @@ export class CoreActions {
       }).toString();
 
       const url = `${routes.fetchBridgingRoutes}?${query}`;
-      const response = await this.axiosInstance.get<GetRoutingResponse>(url);
+      const response = await this.axiosInstance.get<BridgeRoute[]>(url);
       return response.data || [];
     } catch (err: any) {
       console.error(`Error fetching bridging routes: ${err.message}`);
