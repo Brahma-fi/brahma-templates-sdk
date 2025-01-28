@@ -38,53 +38,6 @@ export type GenerateCalldataResponse = {
   };
 };
 
-export type SubscribeAutomationParams = {
-  chainId: number;
-  data: {
-    metadata: Record<string, any>;
-    duration: number;
-    tokenInputs: Record<string, string>;
-    tokenLimits: Record<string, string>;
-    registryID: string;
-    chainId: number;
-    ownerAddress: string;
-  };
-};
-
-export type UpdateAutomationParams = {
-  subAccountAddress: Address;
-  chainId: number;
-  data: {
-    sweepTokens: string[];
-    execViaSubAcc: {
-      to: Address;
-      value: string;
-      data: string;
-    }[];
-    metadata: Record<string, any>;
-    duration: number;
-    tokenInputs: Record<string, string>;
-    tokenLimits: Record<string, string>;
-    registryID: string;
-    chainId: number;
-    ownerAddress: Address;
-  };
-};
-
-export type VendorCancelAutomationParams = {
-  subAccountAddress: Address;
-  chainId: number;
-  data: {
-    sweepTokens?: string[];
-    execViaSubAcc: {
-      to: Address;
-      value: string;
-      data: string;
-    }[];
-    ownerConsole: Address;
-  };
-};
-
 export type SendParams = {
   to: Address;
   amount: string;

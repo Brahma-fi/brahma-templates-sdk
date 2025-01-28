@@ -1,5 +1,3 @@
-/********  Automation Context Types     **********/
-
 import { Address } from "viem";
 
 export type AutomationLogResponse = {

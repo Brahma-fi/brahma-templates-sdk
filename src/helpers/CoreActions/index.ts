@@ -12,7 +12,7 @@ import {
   SwapParams,
 } from "./types";
 
-export class NativeActions {
+export class CoreActions {
   private readonly axiosInstance: AxiosInstance;
 
   constructor(apiKey: string, baseURL: string) {

@@ -1,12 +1,14 @@
-import { Address } from "viem";
 import axios, { AxiosInstance } from "axios";
-import { AutomationLogResponse, AutomationSubscription } from "./types";
-
-const routes = {
-  // Automation Context Fetcher Routes
-  fetchAutomationSubscriptions: "/automations/subscriptions/console",
-  fetchAutomationLogs: "/kernel/logs",
-};
+import {
+  SubscribeAutomationParams,
+  UpdateAutomationParams,
+  VendorCancelAutomationParams,
+} from "./types";
+import {
+  GenerateCalldataResponse,
+  GeneratePayload,
+} from "../CoreActions/types";
+import routes from "@/routes";
 
 export class AutomationContextFetcher {
   private readonly axiosInstance: AxiosInstance;
