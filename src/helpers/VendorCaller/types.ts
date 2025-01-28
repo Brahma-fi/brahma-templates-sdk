@@ -25,7 +25,7 @@ export type GenerateCalldataResponse = {
 export enum ActionNameToId {
   send = 301,
   swap = 309,
-  bridging = 326
+  bridging = 326,
 }
 
 export type GeneratePayload<T, A extends ActionType> = A extends "BUILD"
@@ -235,7 +235,7 @@ export enum WorkflowExecutionStatus {
   CANCELED = 4,
   TERMINATED = 5,
   CONTINUED_AS_NEW = 6,
-  TIMED_OUT = 7
+  TIMED_OUT = 7,
 }
 
 export type WorkflowStateResponse = {
@@ -357,10 +357,7 @@ export type BridgeParams = {
   chainIdOut: number;
   tokenIn: Address;
   tokenOut: Address;
-  tokenOutName: string;
-  amountIn: string;
   amount: string;
-  amountOut: string;
   route: BridgingRoute;
   recipient: Address;
   ownerAddress: Address;
