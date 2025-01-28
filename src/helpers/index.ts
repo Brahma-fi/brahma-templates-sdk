@@ -1,4 +1,4 @@
-export * from "./AutomationContextFetcher";
+export * from "./AutomationContext";
 export * from "./BuilderCaller";
 export * from "./Communicator";
 export * from "./MessageFormatter";

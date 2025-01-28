@@ -24,7 +24,7 @@ import {
 } from "../CoreActions/types";
 import routes from "@/routes";
 
-export class AutomationContextFetcher {
+export class AutomationContext {
   private readonly axiosInstance: AxiosInstance;
 
   constructor(apiKey: string, baseURL: string) {
