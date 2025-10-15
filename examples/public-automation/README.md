@@ -2,7 +2,7 @@
 
 This document outlines the process for managing assets and deploying a Brahma Account using a pre-computed address. The flow involves several steps, from fetching assets to deploying the account and checking the deployment status.
 
-Checkout the Deployed App here - https://public-strategy-page.vercel.app/
+Checkout the Deployed App here - <https://public-strategy-page.vercel.app/>
 
 ```mermaid
 flowchart TD;
@@ -51,11 +51,11 @@ flowchart TD;
 
 ### 6. Deploy Brahma Account
 
-- Use `generateAndDeploySubAccount` to generate and deploy the account using the public deployer from `brahma-templates-sdk` calling the functions `generateAutomationSubAccount` and `deployConsoleAndSubAccount`.
+- Use `generateAndDeploySubAccount` to generate and deploy the account using the public deployer from `brahma-console-kit` calling the functions `generateAutomationSubAccount` and `deployConsoleAndSubAccount`.
 
 ### 7. Poll for Deployment Status
 
-- Use `fetchDeploymentStatus` to poll the deployment status using the `fetchTaskStatus` from the `brahma-templates-sdk`'s public deployer.
+- Use `fetchDeploymentStatus` to poll the deployment status using the `fetchTaskStatus` from the `brahma-console-kit`'s public deployer.
 
 ## Error Handling
 

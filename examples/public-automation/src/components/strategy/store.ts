@@ -1,18 +1,20 @@
 import { create } from "zustand";
-import { TemplatesSDK } from "brahma-templates-sdk";
-import { signTypedData } from "@wagmi/core";
+import { wagmiConfig } from "@/wagmi";
 import { Address, fromHex } from "viem";
+import { signTypedData } from "@wagmi/core";
+import { ConsoleKit } from "brahma-console-kit";
 
 import { TaskIdStatusType } from "./types";
+import { SCAM_TOKEN_WORDS } from "@/constants";
 import { SupportedChainIds, TAsset } from "@/types";
 import { fetchAssetsBalanceMultiCall, sortAssets } from "@/utils";
-import { SCAM_TOKEN_WORDS } from "@/constants";
-import { wagmiConfig } from "@/wagmi";
 import { dispatchToast } from "../shared/components";
 
-const API_KEY = "<your-api-key>";
+const apiKey = process.env.NEXT_PUBLIC_API_KEY || "your-api-key-here"; // Replace with your actual API key
+const baseURL =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://dev.console.fi/vendor";
 
-const sdk = new TemplatesSDK(API_KEY);
+const kit = new ConsoleKit(apiKey, baseURL);
 
 type Store = {
   loading: boolean;
@@ -69,7 +71,7 @@ const useStore = create<Store>((set, get) => ({
   fetchPreComputedConsoleAddress: async (owner, chainId, feeToken) => {
     set((state) => ({ ...state, loading: true }));
     try {
-      const data = await sdk.publicDeployer.fetchPreComputeAddress(
+      const data = await kit.publicDeployer.fetchPreComputeData(
         owner,
         chainId,
         feeToken
@@ -134,7 +136,7 @@ const useStore = create<Store>((set, get) => ({
     try {
       // Generate Automation SubAccount
       const generateData =
-        await sdk.publicDeployer.generateAutomationSubAccount(
+        await kit.publicDeployer.generateAutomationSubAccount(
           eoa,
           preComputedConsoleAddress,
           chainId,
@@ -144,9 +146,13 @@ const useStore = create<Store>((set, get) => ({
           tokens,
           amounts,
           {
-            duration: 0,
+            duration: 3600, // Example duration, adjust as needed
             tokenInputs: {},
             tokenLimits: {},
+            whitelistedAddresses: [],
+          },
+          {
+            // Metadata - Empty object for now, can be extended later
           }
         );
 
@@ -191,7 +197,7 @@ const useStore = create<Store>((set, get) => ({
       }
 
       // Deploy Brahma Account
-      const deployData = await sdk.publicDeployer.deployBrahmaAccount(
+      const deployData = await kit.publicDeployer.deployBrahmaAccount(
         eoa,
         chainId,
         HARDCODED_REGISTRY_ID,
@@ -251,7 +257,7 @@ const useStore = create<Store>((set, get) => ({
   },
   fetchDeploymentStatus: async (taskId) => {
     try {
-      const data = await sdk.publicDeployer.fetchDeploymentStatus(taskId);
+      const data = await kit.publicDeployer.fetchDeploymentStatus(taskId);
 
       if (!data) {
         dispatchToast({
